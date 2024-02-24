@@ -33,32 +33,25 @@ To implement the LMQ bound, we need to do the following steps:
 Here is a possible pseudocode implementation of the LMQ bound:
 
 ```python
-# Input: a list of coefficients of a polynomial p(x) in decreasing order of degree
+# Input: "coeffs": list of coefficients of a polynomial p(x) in decreasing order of degree
 # Output: an upper bound on the values of the positive roots of p(x)
-def LMQ_bound(p):
+def LMQ_bound(coeffs):
   # Initialize the bound to zero
-  bound = 0
+  upper_bound = float('-inf')
   # Initialize an array to store the powers of 2 for each positive coefficient
   powers = [1] * (n + 1)
-  # Loop through the coefficients of p(x) from right to left
-  for i in range(n, -1, -1):
-    # If the coefficient is negative
-    if a_i < 0:
-      # Initialize the minimum to infinity
-      minimum = float("inf")
-      # Loop through the preceding positive coefficients
-      for j in range(i + 1, n + 1):
-        if a_j > 0:
-          # Compute the radical from the pairing
-          radical = (j - i) * (-a_i / (a_j * powers[j])) ** (1 / (j - i))
-          # Update the minimum if needed
-          minimum = min(minimum, radical)
-          # Increment the power of 2 for the positive coefficient
-          powers[j] *= 2
-      # Update the bound if needed
-      bound = max(bound, minimum)
-  # Return the bound
-  return bound
+# Iterate through all elements in array a
+  for i in range(len(coeffs)):
+      if not coeffs[i] < 0: continue # Check if ai < 0
+
+      for j in range(i+1, len(coeffs)):
+          if not coeffs[j] > 0: continue  # Check if aj > 0 and j > i
+
+          value = (-2**powers[j] * coeffs[i] / coeffs[j]) ** (1 / (j - i))  # Calculate the j-i th root of (-2^t_j*a_i/a_j)
+          minValue = min(value, coeffs[j])
+          upper_bound = max(upper_bound, minValue)
+    # Return the upper bound
+  return upper_bound
 ```
 
 ## Square-free polynomials
