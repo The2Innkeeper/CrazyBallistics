@@ -1,4 +1,4 @@
-Here is explanation of a basic algorithm for finding all the positive real roots of a polynomial.
+Here is explanation of a basic algorithm for finding all the positive real roots of a polynomial. It is far from optimized but it works.
 
 There exists a theorem called [Sturm's theorem](https://en.wikipedia.org/wiki/Sturm%27s_theorem), which states allows you to count the number of real roots of a squarefree polynomial inside an open-closed interval $]a,b]$. 
 
