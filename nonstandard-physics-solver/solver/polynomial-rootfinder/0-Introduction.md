@@ -34,18 +34,31 @@ Here is a possible pseudocode implementation of the LMQ bound:
 
 ```python
 # Input: a list of coefficients of a polynomial p(x) in decreasing order of degree
-# Output: the LMQ bound on the values of the positive roots of p(x)
-def LMQ_bound(coeffs):
+# Output: an upper bound on the values of the positive roots of p(x)
+def LMQ_bound(p):
   # Initialize the bound to zero
   bound = 0
-  # Initialize a list of counters for the positive coefficients
-  t = [1] * len(coeffs)
-  # Loop over the coefficients from right to left
-  for i in range(len(coeffs) - 1, -1, -1):
+  # Initialize an array to store the powers of 2 for each positive coefficient
+  powers = [1] * (n + 1)
+  # Loop through the coefficients of p(x) from right to left
+  for i in range(n, -1, -1):
     # If the coefficient is negative
-    if coeffs[i] < 0:
-      # Initialize the minimum radical to infinity
-      min
+    if a_i < 0:
+      # Initialize the minimum to infinity
+      minimum = float("inf")
+      # Loop through the preceding positive coefficients
+      for j in range(i + 1, n + 1):
+        if a_j > 0:
+          # Compute the radical from the pairing
+          radical = (j - i) * (-a_i / (a_j * powers[j])) ** (1 / (j - i))
+          # Update the minimum if needed
+          minimum = min(minimum, radical)
+          # Increment the power of 2 for the positive coefficient
+          powers[j] *= 2
+      # Update the bound if needed
+      bound = max(bound, minimum)
+  # Return the bound
+  return bound
 ```
 
 ## Square-free polynomials
