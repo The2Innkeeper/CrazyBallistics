@@ -64,3 +64,74 @@ def LMQ_bound(coeffs):
 
 ## Square-free polynomials
 A recurring concept when looking at this type of algorithm is the "squarefree polynomial". For our purposes, a squarefree polynomial is one with no repeated roots (all zeroes have exponent 1 in the factored form). Indeed, many such algorithms require that the input is a squarefree polynomial. In theory, this is not a problem since we can reduce the polynomial to a squarefree one with the same roots (we are not interested in the multiplicity). If you do the algebra, you will notice that for a given polynomial $p(x)$, you can simply divide it by its greatest common divisor with its derivative, and it will give a squarefree polynomial with the same roots. So $$p_{reduced}(x) = \frac{p(x)}{\gcd(p(x), p'(x))}$$ will have the same roots but multiplicity $1$. However, in practice, this procedure is not always numerically stable and can result in great errors, even missing roots completely. For our problem, this should hopefully not occur too many times to be problematic since in most cases, it will be squarefree from the start anyways. Relevant work I found about this is from [(Yun,1976)](https://dl.acm.org/doi/10.1145/800205.806320).
+
+#### Pseudocode
+```python
+def polynomial_derivative_coefficients(poly_coeffs):
+    # Calculate the coefficients of the derivative of the polynomial
+    derivative_coeffs = []
+    for power, coeff in enumerate(poly_coeffs):
+        if power > 0:  # Skip the constant term
+            derivative_coeffs.append(coeff * power)
+    return derivative_coeffs
+
+def polynomial_division(dividend, divisor):
+    # Perform polynomial division of dividend by divisor
+    # The dividend and divisor are lists of coefficients, from lowest to highest degree
+    quotient = []
+    remainder = list(dividend)  # Start with the dividend as the remainder
+
+    # Degree of the dividend and divisor polynomials
+    deg_dividend = len(dividend) - 1
+    deg_divisor = len(divisor) - 1
+
+    while deg_dividend >= deg_divisor and any(remainder):
+        # Leading coefficients and their degree
+        lead_dividend = remainder[-1]
+        lead_divisor = divisor[-1]
+        deg_lead_dividend = len(remainder) - 1
+
+        # Calculate the next coefficient of the quotient
+        coeff_quotient = lead_dividend / lead_divisor
+        deg_diff = deg_lead_dividend - deg_divisor
+        quotient_term = [0] * deg_diff + [coeff_quotient]
+
+        # Subtract the current divisor term from the remainder
+        divisor_term = [coeff * coeff_quotient for coeff in divisor] + [0] * deg_diff
+        remainder = [a - b for a, b in zip(remainder + [0] * len(divisor_term), divisor_term)]
+
+        # Remove trailing zeros from the remainder
+        while remainder and remainder[-1] == 0:
+            remainder.pop()
+
+        # Update the degree of the remainder
+        deg_dividend = len(remainder) - 1
+
+        # Add the current quotient term to the quotient
+        quotient = [a + b for a, b in zip(quotient + [0] * len(quotient_term), quotient_term)]
+
+    # Remove trailing zeros from the quotient
+    while quotient and quotient[-1] == 0:
+        quotient.pop()
+
+    return quotient, remainder
+
+def gcd_polynomials(a, b):
+    # Calculate the GCD of two polynomials a and b
+    while any(b):  # While b is not the zero polynomial
+        _, remainder = polynomial_division(a, b)
+        a, b = b, remainder
+    return a
+
+def make_square_free(poly_coeffs):
+    # Calculate the derivative of the polynomial
+    derivative_coeffs = polynomial_derivative_coefficients(poly_coeffs)
+    
+    # Calculate the GCD of the polynomial and its derivative
+    gcd_coeffs = gcd_polynomials(poly_coeffs, derivative_coeffs)
+    
+    # Divide the original polynomial by the GCD
+    square_free_coeffs, _ = polynomial_division(poly_coeffs, gcd_coeffs)
+    
+    return square_free_coeffs
+```
