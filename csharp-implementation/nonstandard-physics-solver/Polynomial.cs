@@ -1,14 +1,57 @@
 namespace nonstandard_physics_solver;
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Numerics;
 
 /// <summary>
-/// This class provides methods for decomposing a polynomial into its square-free component.
+/// Provides methods for polynomials.
 /// </summary>
-public static class PolynomialSquarefreeDecomposer
+public static class Polynomial
 {
+    /// <summary>
+    /// Evaluates a polynomial at a specified point using compensated Horner's method. It takes on average around 2, up to 3 times as many calculations as Horner's method.
+    /// </summary>
+    /// <param name="coefficients">The coefficients of the polynomial in descending order.</param>
+    /// <param name="x">The point at which to evaluate the polynomial.</param>
+    /// <returns>The value of the polynomial at point x.</returns>
+    /// <exception cref="ArgumentException">Thrown when the coefficients list is null or empty.</exception>
+    public static double EvaluatePolynomialAccurate(List<double> coefficients, double x)
+    {
+        if (coefficients == null || coefficients.Count ==0)
+            throw new ArgumentException("Coefficients list cannot be null or empty.");
+
+        double sum = coefficients[^1]; // Start with the last coefficient
+        double comp = 0.0; // Compensation for lost low-order bits
+
+        for (int coeff_i = coefficients.Count - 2; coeff_i >= 0; coeff_i--)
+        {
+            double y = coefficients[coeff_i] + comp; // Add the compensation
+            double t = sum * x + y; // Horner's method step
+            comp = t - sum * x - y; // Update the compensation
+            sum = t; // Update the sum
+        }
+
+        return sum;
+    }
+
+    /// <summary>
+    /// Evaluates a polynomial at a given point using Horner's method.
+    /// </summary>
+    /// <param name="inputValue">The input value at which to evaluate the polynomial.</param>
+    /// <param name="polynomialCoefficients">The coefficients of the polynomial in increasing order of degree.</param>
+    /// <returns>The result of the polynomial evaluation.</returns>
+    public static float EvaluatePolynomialHorner(float inputValue, float[] polynomialCoefficients)
+    {
+        int degree = polynomialCoefficients.Length - 1;
+        float hornerResult = polynomialCoefficients[degree];
+        for (int coeff_i = degree - 1; coeff_i >= 0; coeff_i--)
+        {
+            hornerResult = hornerResult * inputValue + polynomialCoefficients[coeff_i];
+        }
+        return hornerResult;
+    }
+
+
     /// <summary>
     /// Generates a square-free polynomial from the input list of polynomial coefficients.
     /// </summary>
@@ -62,15 +105,17 @@ public static class PolynomialSquarefreeDecomposer
 
                 double coeffQuotient = leadDividend / leadDivisor;
                 int degDiff = degLeadDividend - degDivisor;
-                var quotientTerm = new List<double>(new double[degDiff]);
-                quotientTerm.Add(coeffQuotient);
+                var quotientTerm = new List<double>(new double[degDiff])
+                {
+                    coeffQuotient
+                };
 
                 var divisorTerm = divisor.Select(coeff => coeff * coeffQuotient).ToList();
                 divisorTerm.AddRange(new double[degDiff]);
 
                 remainder = remainder.Zip(divisorTerm, (a, b) => a - b).ToList();
 
-                while (remainder.Any() && remainder.Last() == 0)
+                while (remainder.Count != 0 && remainder.Last() == 0)
                 {
                     remainder.RemoveAt(remainder.Count - 1);
                 }
@@ -80,7 +125,7 @@ public static class PolynomialSquarefreeDecomposer
                 quotient = quotient.Zip(quotientTerm, (a, b) => a + b).ToList();
             }
 
-            while (quotient.Any() && quotient.Last() == 0)
+            while (quotient.Count != 0 && quotient.Last() == 0)
             {
                 quotient.RemoveAt(quotient.Count - 1);
             }
@@ -167,7 +212,7 @@ public static class PolynomialSquarefreeDecomposer
 
                 remainder = remainder.Zip(divisorTerm, (a, b) => a - b).ToList();
 
-                while (remainder.Any() && remainder.Last() == 0)
+                while (remainder.Count != 0 && remainder.Last() == 0)
                 {
                     remainder.RemoveAt(remainder.Count - 1);
                 }
@@ -177,7 +222,7 @@ public static class PolynomialSquarefreeDecomposer
                 quotient = quotient.Zip(quotientTerm, (a, b) => a + b).ToList();
             }
 
-            while (quotient.Any() && quotient.Last() == 0)
+            while (quotient.Count != 0 && quotient.Last() == 0)
             {
                 quotient.RemoveAt(quotient.Count - 1);
             }

@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\nonstandard-physics-solver\-nonstandard_physics-solver.csproj" />
+    <ProjectReference Include="..\nonstandard-physics-solver\nonstandard-physics-solver.csproj" />
   </ItemGroup>
 
 </Project>

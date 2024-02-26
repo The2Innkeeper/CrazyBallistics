@@ -24,10 +24,10 @@ namespace nonstandard_physics_solver.Tests
             float expected = 11f; // The polynomial evaluated at x=0 is equal to the constant term
                                   // Act
                                   // Evaluate the polynomial at the given inputValue using Horner's method
-            float result = PolynomialEvaluator.EvaluatePolynomialHorner(inputValue, polynomialCoefficients);
+            float result = Polynomial.EvaluatePolynomialHorner(inputValue, polynomialCoefficients);
 
             // Assert
-            // Verify that the result is equal to the expected value with a precision of4 decimal places
+            // Verify that the result is equal to the expected value with a precision of 4 decimal places
             Assert.Equal((float)expected, (float)result, (float)0.002f);
         }
 
@@ -41,10 +41,22 @@ namespace nonstandard_physics_solver.Tests
             float expected = 8.75f; // Replace with the expected result after calculation
 
             // Act
-            float result = PolynomialEvaluator.EvaluatePolynomialHorner(inputValue, polynomialCoefficients);
+            float result = Polynomial.EvaluatePolynomialHorner(inputValue, polynomialCoefficients);
 
             // Assert
             Assert.Equal((float)expected, (float)result, (float)4); // Adjust the precision as needed
+        }
+
+        [Fact]
+        public void TestMakeSquareFree()
+        {
+            // Example polynomial: x^2 - 2x + 1, which is (x-1)^2 and should be reduced to (x-1)
+            var coefficients = new List<double> { 1, -2, 1 };
+            var expected = new List<double> { 1, -1 }; // Expected result after making squarefree
+
+            var result = Polynomial.MakeSquareFree(coefficients);
+
+            Assert.Equal(expected, result);
         }
     }
 }
