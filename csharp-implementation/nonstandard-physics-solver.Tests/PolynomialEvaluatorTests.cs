@@ -51,8 +51,8 @@ namespace nonstandard_physics_solver.Tests
         public void TestMakeSquareFree()
         {
             // Example polynomial: x^2 - 2x + 1, which is (x-1)^2 and should be reduced to (x-1)
-            var coefficients = new List<double> { 1, -2, 1 };
-            var expected = new List<double> { 1, -1 }; // Expected result after making squarefree
+            var coefficients = new List<float> { 1, -2, 1 };
+            var expected = new List<float> { 1, -1 }; // Expected result after making squarefree
 
             var result = Polynomial.MakeSquareFree(coefficients);
 
