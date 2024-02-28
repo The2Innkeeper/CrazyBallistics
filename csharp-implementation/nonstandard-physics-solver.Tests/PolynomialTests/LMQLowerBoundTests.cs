@@ -1,12 +1,15 @@
-﻿namespace NonstandardPhysicsSolver.Polynomials.Tests;
+﻿namespace NonstandardPhysicsSolver.Polynomial.Tests;
 
-public class LMQUpperBoundCalculatorTests
+using NonstandardPhysicsSolver.Polynomials;
+
+public class LMQLowerBoundTests
 {
     [Fact]
-    public void LMQUpperBound_WithValidCoefficients_ReturnsCorrectBound()
+    public void LMQLowerBound_WithValidCoefficients_ReturnsCorrectBound()
     {
         // Arrange
         var coeffs = new List<float> { 1, -2, -1, 2, 3 }; // 3x^4 + 2x^3 - x^2 - 2x + 1
+        coeffs.Reverse(); // x^4 - 2x^3 - x^2 + 2x + 3
         var polynomial = new Polynomial(coeffs);
         /* 
          * To calculate this bound by hand, start from the highest degree negative coefficient,
@@ -25,9 +28,9 @@ public class LMQUpperBoundCalculatorTests
         float expectedBound = (float)Math.Pow(4.0 / 3.0, 1.0 / 3.0);
 
         // Act
-        var bound = polynomial.LMQPositiveUpperBound();
+        var bound = polynomial.LMQPositiveLowerBound();
 
         // Assert
-        Assert.Equal(expectedBound, bound, 1e-4f);
+        Assert.Equal(expectedBound, bound, 1e-4f, $"Expected lower bound: {expectedBound}, but got: {bound}");
     }
 }

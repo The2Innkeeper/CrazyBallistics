@@ -3,12 +3,12 @@
 /// <summary>
 /// Represents a polynomial and provides methods for various polynomial operations.
 /// </summary>
-public partial class Polynomial
+public partial struct Polynomial
 {
     /// <summary>
     /// Scale the coefficients such that the leading coefficient (highest degree) is 1.
     /// </summary>
-    public void Normalize()
+    public readonly void Normalize()
     {
         var coefficients = new List<float>(Coefficients);
         float scalingFactor = coefficients[^1];
@@ -19,7 +19,7 @@ public partial class Polynomial
     /// Create a normalized version of the polynomial (leading coefficient is 1).
     /// </summary>
     /// <returns>A normalized version of the polynomial (leading coefficient is 1).</returns>
-    public Polynomial Normalized()
+    public readonly Polynomial Normalized()
     {
         var coefficients = new List<float>(Coefficients);
         float scalingFactor = coefficients[^1];
@@ -31,7 +31,7 @@ public partial class Polynomial
     /// Calculates the derivative of the polynomial.
     /// </summary>
     /// <returns>A new Polynomial instance representing the derivative of the original polynomial.</returns>
-    public Polynomial PolynomialDerivative()
+    public readonly Polynomial PolynomialDerivative()
     {
         if (Coefficients.Count == 1) return new Polynomial([0f]);
         var derivativeCoeffs = Coefficients.Select((coeff, index) => coeff * index).Skip(1).ToList();

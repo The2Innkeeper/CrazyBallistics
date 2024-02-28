@@ -2,7 +2,7 @@ namespace NonstandardPhysicsSolver.Polynomials;
 using System;
 using System.Collections.Generic;
 
-public partial class Polynomial
+public partial struct Polynomial
 {
     /// <summary>
     /// List of coefficients in increasing order of degree
@@ -22,7 +22,7 @@ public partial class Polynomial
     /// <param name="index">The zero-based index where the coefficient is to be updated.</param>
     /// <param name="newValue">The new value of the coefficient at the specified index.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the index is outside the bounds of the Coefficients list.</exception>
-    public void UpdateCoefficient(int index, float newValue)
+    public readonly void UpdateCoefficient(int index, float newValue)
     {
         // Validate the index before attempting to update
         if (index < 0 || index >= Coefficients.Count)
@@ -36,7 +36,7 @@ public partial class Polynomial
     /// Adds a new coefficient to the end of the Coefficients list, effectively increasing the degree.
     /// </summary>
     /// <param name="newCoefficient">The value of the new coefficient to be added.</param>
-    public void AddCoefficient(float newCoefficient)
+    public readonly void AddCoefficient(float newCoefficient)
     {
         // Add the new coefficient to the end of the list
         Coefficients.Add(newCoefficient);
