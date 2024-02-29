@@ -7,10 +7,10 @@ using System;
 public class PolynomialBisectionTests
 {
     [Theory]
-    [InlineData(-1, 1, 0)] // Simple root at 0 for x^3 - x
-    [InlineData(-2, 0, -1)] // Negative root for x^3 - x, demonstrating tolerance
-    [InlineData(0, 2, 1)] // Positive root for x^3 - x, demonstrating tolerance
-    [InlineData(0, 0, 0)] // Equal bounds
+    [InlineData(-0.9f, 0.9f, 0f)] // Simple root at 0 for x^3 - x
+    [InlineData(-2f, -0.01f, -1f)] // Negative root for x^3 - x, demonstrating tolerance
+    [InlineData(0.1f, 2f, 1f)] // Positive root for x^3 - x, demonstrating tolerance
+    [InlineData(0f, 0f, 0f)] // Equal bounds
     public void RefineIntervalBisection_WithRootInInterval_FindsRoot(float leftBound, float rightBound, float expectedRoot)
     {
         // Arrange

@@ -39,6 +39,8 @@ public partial struct Polynomial
         // Edge cases
         if (leftBoundValue == 0) return leftBound;
         if (rightBoundValue == 0) return rightBound;
+        bool doesNotCrossZero = MathF.Sign(leftBoundValue) == MathF.Sign(rightBoundValue);
+        if (doesNotCrossZero) throw new ArgumentException("The initial interval does not contain a single root.");
 
         // Set k1 = 0.2/(b-a) if not specified
         if (float.IsNaN(truncationFactor))
@@ -71,7 +73,7 @@ public partial struct Polynomial
             UpdateBounds(xITP, xITPValue, ref leftBound, ref rightBound, ref leftBoundValue, ref rightBoundValue);
 
             // Return xITP if converged
-            if ((rightBound - leftBound) / 2f < tolerance) return xITP;
+            if ((rightBound - leftBound) / 2f < tolerance) return (rightBound + leftBound) / 2f;
         }
 
         static (float xMidpoint, float projectionRadius, float truncationRange) CalculateParameters(float leftBound, float rightBound, float tolerance, float truncationFactor, float truncationExponent, int maxIterations, int iteration)
@@ -150,7 +152,7 @@ public partial struct Polynomial
         if (fRight == 0) return rightBound;
 
         // Check if the initial interval is valid
-        if (fLeft * fRight > 0)
+        if (MathF.Sign(fLeft) == MathF.Sign(fRight))
         {
             throw new ArgumentException("The initial interval does not contain a single root.");
         }
