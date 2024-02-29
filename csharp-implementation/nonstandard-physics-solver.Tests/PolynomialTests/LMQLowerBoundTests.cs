@@ -1,6 +1,7 @@
-﻿namespace NonstandardPhysicsSolver.Polynomial.Tests;
+﻿namespace NonstandardPhysicsSolver.Polynomials.Tests;
 
 using NonstandardPhysicsSolver.Polynomials;
+using NonstandardPhysicsSolver.Polynomials.Tests.TestUtils;
 
 public class LMQLowerBoundTests
 {
@@ -31,6 +32,6 @@ public class LMQLowerBoundTests
         var bound = polynomial.LMQPositiveLowerBound();
 
         // Assert
-        Assert.Equal(expectedBound, bound, 1e-4f, $"Expected lower bound: {expectedBound}, but got: {bound}");
+        AssertExtensions.FloatsApproximatelyEqual(expectedBound, bound, 1e-4f);
     }
 }

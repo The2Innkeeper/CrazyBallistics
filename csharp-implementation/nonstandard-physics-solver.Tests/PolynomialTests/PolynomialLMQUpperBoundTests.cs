@@ -1,5 +1,7 @@
 ﻿namespace NonstandardPhysicsSolver.Polynomials.Tests;
 
+using NonstandardPhysicsSolver.Polynomials.Tests.TestUtils;
+
 public class LMQUpperBoundCalculatorTests
 {
     [Fact]
@@ -28,6 +30,6 @@ public class LMQUpperBoundCalculatorTests
         var bound = polynomial.LMQPositiveUpperBound();
 
         // Assert
-        Assert.Equal(expectedBound, bound, 1e-4f);
+        AssertExtensions.FloatsApproximatelyEqual(expectedBound, bound, 1e-4f);
     }
 }

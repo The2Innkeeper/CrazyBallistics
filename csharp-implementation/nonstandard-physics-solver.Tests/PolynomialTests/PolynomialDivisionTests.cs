@@ -1,6 +1,6 @@
 ﻿namespace NonstandardPhysicsSolver.Polynomials.Tests;
 
-using NonstandardPhysicsSolver.Polynomial.Tests.TestUtils.Comparers;
+using NonstandardPhysicsSolver.Polynomials.Tests.TestUtils;
 
 public class PolynomialDivisionTests
 {
@@ -14,8 +14,8 @@ public class PolynomialDivisionTests
         {
             var (quotient, remainder) = Polynomial.PolynomialDivision(dividend, divisor);
 
-            ApproximateComparers.AssertListApproximatelyEquals(expectedQuotient.Coefficients, quotient.Coefficients);
-            ApproximateComparers.AssertListApproximatelyEquals(expectedRemainder.Coefficients, remainder.Coefficients);
+            AssertExtensions.ListsApproximatelyEqual(expectedQuotient.Coefficients, quotient.Coefficients);
+            AssertExtensions.ListsApproximatelyEqual(expectedRemainder.Coefficients, remainder.Coefficients);
         }
     }
 

@@ -22,6 +22,7 @@ public partial struct Polynomial
     /// </remarks>
     public float RefineIntervalITP(float leftBound, float rightBound, float tol = 1e-5f, int maxIterations = 50, float k1 = float.NaN, float k2 = 2f, int n0 = 1)
     {
+        // TODO: Implement check if there is no root inside the interval, and if so, throw an error.
         // Preprocessing
         if (float.IsNaN(k1))
         {
@@ -36,7 +37,7 @@ public partial struct Polynomial
         bool increasing = EvaluatePolynomialAccurate(leftBound) < EvaluatePolynomialAccurate(rightBound);
 
         // Iterate until convergence or maximum number of iterations is reached
-        for (int iterations = 0; iterations < maxIterations && rightBound - leftBound > 2 * tol; iterations++)
+        for (int iterations = 0; rightBound - leftBound > 2 * tol; iterations++)
         {
             // Calculating Parameters
             float xHalf = (leftBound + rightBound) / 2;
@@ -84,6 +85,8 @@ public partial struct Polynomial
                     leftBound = rightBound = xITP;
                 }
             }
+
+            if (iterations >= maxIterations) return float.NaN;
         }
 
         return (float)(leftBound + rightBound) / 2f;
@@ -120,7 +123,7 @@ public partial struct Polynomial
         bool increasing = EvaluatePolynomialAccurate(leftBound) < EvaluatePolynomialAccurate(rightBound);
 
         // Iterate until convergence or maximum number of iterations is reached
-        for (int iterations = 0; iterations < maxIterations && rightBound - leftBound > 2 * tol; iterations++)
+        for (int iterations = 0; rightBound - leftBound > 2 * tol; iterations++)
         {
             // Calculating Parameters
             double xHalf = (leftBound + rightBound) / 2;
@@ -168,6 +171,7 @@ public partial struct Polynomial
                     leftBound = rightBound = xITP;
                 }
             }
+            if (iterations >= maxIterations) return double.NaN;
         }
 
         return (leftBound + rightBound) / 2.0;

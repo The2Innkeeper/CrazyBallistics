@@ -1,19 +1,20 @@
-﻿namespace NonstandardPhysicsSolver.Polynomials.Tests;
+﻿using NonstandardPhysicsSolver.Polynomials.Tests.TestUtils;
+
+namespace NonstandardPhysicsSolver.Polynomials.Tests;
 
 public class PolynomialDerivativeTest
 {
-    private static void AssertPolynomialDerivative(List<float> originalCoefficients, IEnumerable<float> expectedDerivativeCoefficients)
+    private static void AssertPolynomialDerivative(List<float> originalCoefficients, List<float> expectedDerivativeCoefficients)
     {
         // Arrange
         var polynomial = new Polynomial(originalCoefficients);
-        var expected = expectedDerivativeCoefficients;
 
         // Act
         var derivative = polynomial.PolynomialDerivative();
         var actual = derivative.Coefficients;
 
         // Assert
-        Assert.True(expected.SequenceEqual(actual), "The actual derivative coefficients do not match the expected coefficients.");
+        AssertExtensions.ListsEqual(expectedDerivativeCoefficients, actual);
     }
 
     [Fact]

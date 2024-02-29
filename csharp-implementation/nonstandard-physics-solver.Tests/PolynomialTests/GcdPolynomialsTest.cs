@@ -1,6 +1,6 @@
 namespace NonstandardPhysicsSolver.Polynomials.Tests;
 
-using NonstandardPhysicsSolver.Polynomial.Tests.TestUtils.Comparers;
+using NonstandardPhysicsSolver.Polynomials.Tests.TestUtils;
 
 public class GcdPolynomialsTest
 {
@@ -10,7 +10,7 @@ public class GcdPolynomialsTest
         // Make sure they are both normalized or there can be mistakes
         actual.Normalize();
         expected.Normalize();
-        ApproximateComparers.AssertListApproximatelyEquals(actual.Coefficients, expected.Coefficients);
+        AssertExtensions.ListsApproximatelyEqual(actual.Coefficients, expected.Coefficients);
     }
 
     [Fact]

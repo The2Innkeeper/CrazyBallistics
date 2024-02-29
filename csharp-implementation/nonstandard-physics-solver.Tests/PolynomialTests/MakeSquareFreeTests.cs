@@ -1,6 +1,6 @@
 ﻿namespace NonstandardPhysicsSolver.Polynomials.Tests;
 
-using NonstandardPhysicsSolver.Polynomial.Tests.TestUtils.Comparers;
+using NonstandardPhysicsSolver.Polynomials.Tests.TestUtils;
 using PolynomialUtils;
 using Xunit;
 
@@ -16,7 +16,7 @@ public class MakeSquareFreeTests
         var actualCoefficients = PolynomialUtils.NormalizedCoefficients(squareFreePolynomial);
 
         // Assert
-        ApproximateComparers.AssertListApproximatelyEquals(expectedCoefficients, actualCoefficients);
+        AssertExtensions.ListsApproximatelyEqual(expectedCoefficients, actualCoefficients);
     }
 
     [Fact]
