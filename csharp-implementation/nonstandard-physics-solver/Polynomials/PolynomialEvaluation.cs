@@ -33,6 +33,57 @@ public partial struct Polynomial
     /// <param name="x">The point at which to evaluate the polynomial.</param>
     /// <returns>The value of the polynomial at point x.</returns>
     /// <exception cref="ArgumentException">Thrown when the coefficients list is null or empty.</exception>
+    public readonly double EvaluatePolynomialAccurateDouble(double x)
+    {
+        if (Coefficients == null || Coefficients.Count == 0)
+            throw new ArgumentException("Coefficients list cannot be null or empty.");
+
+        double sum = Coefficients[^1]; // Start with the last coefficient
+        double comp = 0.0; // Compensation for lost low-order bits
+
+        for (int coeff_i = Coefficients.Count - 2; coeff_i >= 0; coeff_i--)
+        {
+            double y = Coefficients[coeff_i] + comp; // Add the compensation
+            double t = sum * x + y; // Horner's method step
+            comp = t - sum * x - y; // Update the compensation
+            sum = t; // Update the sum
+        }
+
+        return sum;
+    }
+
+    /// <summary>
+    /// Same as EvaluatePolynomialAccurate, but uses double precision internally for additional precision.
+    /// </summary>
+    /// <param name="x">The point at which to evaluate the polynomial.</param>
+    /// <returns>The value of the polynomial at point x.</returns>
+    /// <exception cref="ArgumentException">Thrown when the coefficients list is null or empty.</exception>
+    /// <remarks>It takes on average around 2, up to 3 times as many calculations as Horner's method.</remarks>
+    public readonly float EvaluatePolynomialExtraAccurate(float x)
+    {
+        if (Coefficients == null || Coefficients.Count == 0)
+            throw new ArgumentException("Coefficients list cannot be null or empty.");
+
+        double sum = Coefficients[^1]; // Start with the last coefficient
+        double comp = 0.0f; // Compensation for lost low-order bits
+
+        for (int coeff_i = Coefficients.Count - 2; coeff_i >= 0; coeff_i--)
+        {
+            double y = Coefficients[coeff_i] + comp; // Add the compensation
+            double t = sum * x + y; // Horner's method step
+            comp = t - sum * x - y; // Update the compensation
+            sum = t; // Update the sum
+        }
+
+        return (float)sum;
+    }
+
+    /// <summary>
+    /// Evaluates a polynomial at a specified point using compensated Horner's method. It takes on average around 2, up to 3 times as many calculations as Horner's method.
+    /// </summary>
+    /// <param name="x">The point at which to evaluate the polynomial.</param>
+    /// <returns>The value of the polynomial at point x.</returns>
+    /// <exception cref="ArgumentException">Thrown when the coefficients list is null or empty.</exception>
     public readonly double EvaluatePolynomialAccurate(double x)
     {
         if (Coefficients == null || Coefficients.Count == 0)

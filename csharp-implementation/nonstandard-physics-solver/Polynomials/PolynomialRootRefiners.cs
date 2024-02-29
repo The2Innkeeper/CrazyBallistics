@@ -3,16 +3,16 @@
 public partial struct Polynomial
 {
     /// <summary>
-    /// Finds a root of the polynomial within the specified interval using an iterative refinement process.
+    /// (Recommended) Finds a root of the polynomial within the specified interval using an iterative refinement process.
     /// The method combines interpolation, truncation, and projection (ITP) steps to converge towards a single root,
     /// offering superlinear convergence on average and linear convergence in the worst case.
     /// </summary>
-    /// <param name="leftBound">The left boundary of the interval to search for a root.</param>
-    /// <param name="rightBound">The right boundary of the interval to search for a root.</param>
+    /// <param name="leftBound">The left boundary of the interval</param>
+    /// <param name="rightBound">The right boundary of the interval</param>
     /// <param name="tol">The tolerance for convergence. The method aims to find a root within an interval of size less than or equal to 2 * tol. Default is 0.0005f.</param>
-    /// <param name="k1">A coefficient used in the calculation of the truncation step. Default if unchanged is 0.2f / (rightBound - leftBound).</param>
-    /// <param name="k2">A coefficient used in the calculation of the delta for the truncation step, affecting the interpolation robustness. Default is 2f.</param>
-    /// <param name="n0">The initial offset for the maximum number of iterations, contributing to the calculation of the dynamic range for the interpolation step. Default is 1.</param>
+    /// <param name="truncationFactor">A coefficient factor used in the calculation of the truncation step. Default if unchanged is 0.2f / (rightBound - leftBound).</param>
+    /// <param name="truncationExponent">An exponent used in the calculation of the truncation step, affecting the interpolation robustness. Default is 2f.</param>
+    /// <param name="initialOffset">The initial offset for the maximum number of iterations, contributing to the calculation of the dynamic range for the interpolation step. Default is 1.</param>
     /// <param name="maxIterations">The maximum number of iterations to perform. This prevents the method from running indefinitely. Default is 50.</param>
     /// <returns>The approximate position of the root within the specified interval, determined to be within the specified tolerance.</returns>
     /// <remarks>
@@ -20,160 +20,165 @@ public partial struct Polynomial
     /// It dynamically adjusts the interval based on the polynomial's behavior, using interpolation, truncation, and projection steps
     /// to efficiently converge towards the root. The method is designed to work with polynomials where a single root exists within the given interval.
     /// </remarks>
-    public float RefineIntervalITP(float leftBound, float rightBound, float tol = 1e-5f, int maxIterations = 50, float k1 = float.NaN, float k2 = 2f, int n0 = 1)
+    public readonly float RefineIntervalITP(
+        float leftBound,
+        float rightBound,
+        float tolerance = 1e-5f,
+        float truncationFactor = float.NaN,
+        float truncationExponent = 2f,
+        int initialOffset = 1
+        )
     {
-        // TODO: Implement check if there is no root inside the interval, and if so, throw an error.
-        // Preprocessing
-        if (float.IsNaN(k1))
-        {
-            k1 = 0.2f / (rightBound - leftBound); // Value determined experimentally
-        }
-        if (Coefficients.Count > 10)
-        {
-            return (float)RefineIntervalITP((double)leftBound, (double)rightBound, (double)tol, maxIterations, (double)k1, (double)k2, n0);
-        }
-        int nHalf = (int)Math.Ceiling(Math.Log((rightBound - leftBound) / (2 * tol), 2));
-        int nMax = nHalf + n0;
-        bool increasing = EvaluatePolynomialAccurate(leftBound) < EvaluatePolynomialAccurate(rightBound);
+        // Validate input
+        if (leftBound >= rightBound) throw new ArgumentException("Left bound must be less than right bound.");
+        if (tolerance <= 0) throw new ArgumentException("Tolerance must be positive.");
 
-        // Iterate until convergence or maximum number of iterations is reached
-        for (int iterations = 0; rightBound - leftBound > 2 * tol; iterations++)
+        // Preprocessing
+        float leftBoundValue = EvaluatePolynomialAccurate(leftBound);
+        float rightBoundValue = EvaluatePolynomialAccurate(rightBound);
+        // Edge cases
+        if (leftBoundValue == 0) return leftBound;
+        if (rightBoundValue == 0) return rightBound;
+
+        // Set k1 = 0.2/(b-a) if not specified
+        if (float.IsNaN(truncationFactor))
+        {
+            truncationFactor = 0.2f / (rightBound - leftBound); // Value determined experimentally
+        }
+
+        int nMaxBisections = (int)Math.Ceiling(Math.Log((rightBound - leftBound) / (2 * tolerance), 2));
+        int nMaxIterations = nMaxBisections + initialOffset;
+
+        // Main logic: iterate until convergence within tolerance
+        for (int iteration = 0; rightBound - leftBound > 2 * tolerance; iteration++)
         {
             // Calculating Parameters
-            float xHalf = (leftBound + rightBound) / 2;
-            float r = tol * (float)Math.Pow(2, nMax - iterations) - (rightBound - leftBound) / 2;
-            float delta = k1 * (float)Math.Pow(rightBound - leftBound, k2);
+            var (xMidpoint, projectionRadius, truncationRange) = CalculateParameters(leftBound, rightBound, tolerance, truncationFactor, truncationExponent, nMaxIterations, iteration);
 
             // Interpolation
-            float xF = (rightBound * EvaluatePolynomialAccurate(leftBound) - leftBound * EvaluatePolynomialAccurate(rightBound)) / (EvaluatePolynomialAccurate(leftBound) - EvaluatePolynomialAccurate(rightBound));
+            float xRegulaFalsi = InterpolateRegulaFalsi(leftBound, rightBound, leftBoundValue, rightBoundValue);
+
+            int perturbationSign = Math.Sign(xMidpoint - xRegulaFalsi); // Get direction for next steps
 
             // Truncation
-            float sigma = Math.Sign(xHalf - xF);
-            float xT = Math.Abs(xHalf - xF) >= delta ? xF + sigma * delta : xHalf;
+            var xTruncated = Truncate(xMidpoint, projectionRadius, perturbationSign, truncationRange);
 
             // Projection
-            float xITP = Math.Abs(xT - xHalf) <= r ? xT : xHalf - sigma * r;
+            float xITP = Project(xTruncated, xMidpoint, projectionRadius, perturbationSign);
 
-            // Updating Interval
-            if (increasing)
-            {
-                if (EvaluatePolynomialAccurate(xITP) > 0)
-                {
-                    rightBound = xITP;
-                }
-                else if (EvaluatePolynomialAccurate(xITP) < 0)
-                {
-                    leftBound = xITP;
-                }
-                else
-                {
-                    leftBound = rightBound = xITP;
-                }
-            }
-            else
-            {
-                if (EvaluatePolynomialAccurate(xITP) < 0)
-                {
-                    rightBound = xITP;
-                }
-                else if (EvaluatePolynomialAccurate(xITP) > 0)
-                {
-                    leftBound = xITP;
-                }
-                else
-                {
-                    leftBound = rightBound = xITP;
-                }
-            }
+            // Update bounds
+            float xITPValue = EvaluatePolynomialAccurate(xITP);
+            UpdateBounds(xITP, xITPValue, ref leftBound, ref rightBound, ref leftBoundValue, ref rightBoundValue);
 
-            if (iterations >= maxIterations) return float.NaN;
+            // Return xITP if converged
+            if ((rightBound - leftBound) / 2f < tolerance) return xITP;
         }
 
-        return (float)(leftBound + rightBound) / 2f;
+        static (float xMidpoint, float projectionRadius, float truncationRange) CalculateParameters(float leftBound, float rightBound, float tolerance, float truncationFactor, float truncationExponent, int maxIterations, int iteration)
+        {
+            float xMidpoint = (leftBound + rightBound) / 2;
+            float projectionRadius = tolerance * (float)Math.Pow(2, maxIterations - iteration) - (rightBound - leftBound) / 2;
+            float truncationRange = truncationFactor * (float)Math.Pow(rightBound - leftBound, truncationExponent);
+            return (xMidpoint, projectionRadius, truncationRange);
+        }
+
+        static float InterpolateRegulaFalsi(float leftBound, float rightBound, float leftBoundValue, float rightBoundValue)
+        {
+            return (rightBound * leftBoundValue - leftBound * rightBoundValue) / (leftBoundValue - rightBoundValue);
+        }
+
+        static float Truncate(float xMidpoint, float xRegulaFalsi, int perturbationSign, float truncationRange)
+        {
+            return Math.Abs(xMidpoint - xRegulaFalsi) >= truncationRange ? xRegulaFalsi + perturbationSign * truncationRange : xMidpoint;
+        }
+
+        static float Project(float xTruncated, float xMidpoint, float projectionRadius, int perturbationSign)
+        {
+            return Math.Abs(xTruncated - xMidpoint) <= projectionRadius ? xTruncated : xMidpoint - perturbationSign * projectionRadius;
+        }
+
+        static void UpdateBounds(
+            float xITP,
+            float xITPValue,
+            ref float leftBound,
+            ref float rightBound,
+            ref float leftBoundValue,
+            ref float rightBoundValue
+            )
+        {
+            // If xITPValue is exactly 0, we've found the root, update both bounds and return early
+            if (xITPValue == 0)
+            {
+                leftBound = rightBound = xITP;
+                return; // Early exit as we've found the root
+            }
+
+            // Determine if we should update the right or left bound based on the polynomial's behavior
+            bool hasCrossedZero = MathF.Sign(xITPValue) != MathF.Sign(leftBoundValue);
+
+            // If xITPValue has crossed zero, then it is safe to shrink the right side
+            if (hasCrossedZero)
+            {
+                rightBound = xITP;
+                rightBoundValue = xITPValue;
+            }
+            else // In this case, xITPValue has not crossed the x-axis so we should update the left bound
+            {
+                leftBound = xITP;
+                leftBoundValue = xITPValue;
+            }
+        }
+
+        return float.NaN;
     }
 
     /// <summary>
-    /// Same as RefineIntervalITP but uses double precision internally, recommended for higher degree (10+). 
-    /// Finds a root of the polynomial within the specified interval using an iterative refinement process.
-    /// The method combines interpolation, truncation, and projection (ITP) steps to converge towards a single root,
-    /// offering superlinear convergence on average and linear convergence in the worst case.
+    /// Finds a root of the polynomial within the specified interval using the bisection method.
     /// </summary>
     /// <param name="leftBound">The left boundary of the interval to search for a root.</param>
     /// <param name="rightBound">The right boundary of the interval to search for a root.</param>
-    /// <param name="tol">The tolerance for convergence. The method aims to find a root within an interval of size less than or equal to 2 * tol. Default is 0.0005f.</param>
-    /// <param name="k1">A coefficient used in the calculation of the truncation step. Default if unchanged is 0.2f / (rightBound - leftBound).</param>
-    /// <param name="k2">A coefficient used in the calculation of the delta for the truncation step, affecting the interpolation robustness. Default is 2f.</param>
-    /// <param name="n0">The initial offset for the maximum number of iterations, contributing to the calculation of the dynamic range for the interpolation step. Default is 1.</param>
-    /// <param name="maxIterations">The maximum number of iterations to perform. This prevents the method from running indefinitely. Default is 50.</param>
-    /// <returns>The approximate position of the root within the specified interval, determined to be within the specified tolerance.</returns>
-    /// <remarks>
-    /// This method employs an iterative technique that refines the interval containing the root by evaluating the polynomial's sign changes.
-    /// It dynamically adjusts the interval based on the polynomial's behavior, using interpolation, truncation, and projection steps
-    /// to efficiently converge towards the root. The method is designed to work with polynomials where a single root exists within the given interval.
-    /// </remarks>
-    public double RefineIntervalITP(double leftBound, double rightBound, double tol = 1e-5f, int maxIterations = 50, double k1 = double.NaN, double k2 = 2f, int n0 = 1)
+    /// <param name="tolerance">The tolerance for convergence. The method aims to find a root such that the size of the final interval is less than or equal to this value. Default is 0.0001f.</param>
+    /// <param name="maxIterations">The maximum number of iterations to perform. This prevents the method from running indefinitely. Default is 100.</param>
+    /// <returns>The approximate position of the root within the specified interval, determined to be within the specified tolerance, or null if the root cannot be found within the given number of iterations.</returns>
+    /// <exception cref="ArgumentException">Thrown if the initial interval does not contain a root.</exception>
+    public readonly float? RefineIntervalBisection(float leftBound, float rightBound, float tolerance = 0.0001f, int maxIterations = 100)
     {
-        // Preprocessing
-        if (double.IsNaN(k1))
+        float fLeft = EvaluatePolynomialAccurate(leftBound);
+        float fRight = EvaluatePolynomialAccurate(rightBound);
+
+        if (fLeft == 0) return leftBound;
+        if (fRight == 0) return rightBound;
+
+        // Check if the initial interval is valid
+        if (fLeft * fRight > 0)
         {
-            k1 = 0.2 / (rightBound - leftBound); // Value determined experimentally
+            throw new ArgumentException("The initial interval does not contain a single root.");
         }
-        int nHalf = (int)Math.Ceiling(Math.Log((rightBound - leftBound) / (2 * tol), 2));
-        int nMax = nHalf + n0;
-        bool increasing = EvaluatePolynomialAccurate(leftBound) < EvaluatePolynomialAccurate(rightBound);
 
-        // Iterate until convergence or maximum number of iterations is reached
-        for (int iterations = 0; rightBound - leftBound > 2 * tol; iterations++)
+        for (int iteration = 0; iteration < maxIterations; iteration++)
         {
-            // Calculating Parameters
-            double xHalf = (leftBound + rightBound) / 2;
-            double r = tol * Math.Pow(2, nMax - iterations) - (rightBound - leftBound) / 2;
-            double delta = k1 * Math.Pow(rightBound - leftBound, k2);
+            float midpoint = (leftBound + rightBound) / 2f;
+            float fMid = EvaluatePolynomialAccurate(midpoint);
 
-            // Interpolation
-            double xF = (rightBound * EvaluatePolynomialAccurate(leftBound) - leftBound * EvaluatePolynomialAccurate(rightBound)) / (EvaluatePolynomialAccurate(leftBound) - EvaluatePolynomialAccurate(rightBound));
-
-            // Truncation
-            double sigma = Math.Sign(xHalf - xF);
-            double xT = Math.Abs(xHalf - xF) >= delta ? xF + sigma * delta : xHalf;
-
-            // Projection
-            double xITP = Math.Abs(xT - xHalf) <= r ? xT : xHalf - sigma * r;
-
-            // Updating Interval
-            if (increasing)
+            if (fMid == 0 || (rightBound - leftBound) / 2f < tolerance)
             {
-                if (EvaluatePolynomialAccurate(xITP) > 0)
-                {
-                    rightBound = xITP;
-                }
-                else if (EvaluatePolynomialAccurate(xITP) < 0)
-                {
-                    leftBound = xITP;
-                }
-                else
-                {
-                    leftBound = rightBound = xITP;
-                }
+                return midpoint; // A root is found or the interval is sufficiently small
+            }
+
+            // If the points lie in the same region, the root is still on the right side of the midpoint and it is safe to shrink the left side
+            if (MathF.Sign(fMid) == MathF.Sign(fLeft))
+            {
+                leftBound = midpoint; // The root lies in the right half
+                fLeft = fMid; // Update the value at the left bound
             }
             else
             {
-                if (EvaluatePolynomialAccurate(xITP) < 0)
-                {
-                    rightBound = xITP;
-                }
-                else if (EvaluatePolynomialAccurate(xITP) > 0)
-                {
-                    leftBound = xITP;
-                }
-                else
-                {
-                    leftBound = rightBound = xITP;
-                }
+                rightBound = midpoint; // The root lies in the left half
+                // fRight is implicitly updated as we do not use it after this
             }
-            if (iterations >= maxIterations) return double.NaN;
         }
 
-        return (leftBound + rightBound) / 2.0;
+        // If the maximum number of iterations is reached without converging
+        return null;
     }
 }

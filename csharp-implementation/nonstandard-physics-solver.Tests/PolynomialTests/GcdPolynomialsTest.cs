@@ -6,7 +6,7 @@ public class GcdPolynomialsTest
 {
     private static void AssertPolynomialGCD(Polynomial p, Polynomial q, Polynomial expected)
     {
-        Polynomial actual = Polynomial.GcdPolynomials(p, q);
+        Polynomial actual = Polynomial.PolynomialGCD(p, q);
         // Make sure they are both normalized or there can be mistakes
         actual.Normalize();
         expected.Normalize();

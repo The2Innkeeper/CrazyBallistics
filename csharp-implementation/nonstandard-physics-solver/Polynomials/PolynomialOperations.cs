@@ -42,10 +42,10 @@ public partial struct Polynomial
     /// Generates a square-free version of the polynomial by removing any repeated roots.
     /// </summary>
     /// <returns>A new Polynomial instance that is square-free.</returns>
-    public Polynomial MakeSquareFree()
+    public readonly Polynomial MakeSquareFree()
     {
         var derivative = this.PolynomialDerivative();
-        var gcd = GcdPolynomials(this, derivative);
+        var gcd = PolynomialGCD(this, derivative);
 
         // If the GCD is a constant, the original polynomial is already square-free.
         if (gcd.Coefficients.Count == 1 && gcd.Coefficients[0] == 1)
@@ -129,7 +129,7 @@ public partial struct Polynomial
     /// <remarks>
     /// Implements the Euclidean algorithm tailored for polynomials.
     /// </remarks>
-    public static Polynomial GcdPolynomials(Polynomial a, Polynomial b)
+    public static Polynomial PolynomialGCD(Polynomial a, Polynomial b)
     {
         // Continuously apply the Euclidean algorithm until a remainder of zero is found.
         while (b.Coefficients.Any(c => c != 0))
