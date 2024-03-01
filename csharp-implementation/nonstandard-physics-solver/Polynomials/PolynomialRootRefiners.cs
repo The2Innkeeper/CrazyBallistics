@@ -30,7 +30,7 @@ public partial struct Polynomial
         )
     {
         // Validate input
-        if (leftBound >= rightBound) throw new ArgumentException("Left bound must be less than right bound.");
+        if (leftBound > rightBound) throw new ArgumentException("Left bound must be less than right bound.");
         if (tolerance <= 0) throw new ArgumentException("Tolerance must be positive.");
 
         // Preprocessing

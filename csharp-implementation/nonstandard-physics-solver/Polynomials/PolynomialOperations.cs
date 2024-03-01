@@ -6,25 +6,19 @@
 public partial struct Polynomial
 {
     /// <summary>
-    /// Scale the coefficients such that the leading coefficient (highest degree) is 1.
-    /// </summary>
-    public readonly void Normalize()
-    {
-        var coefficients = new List<float>(Coefficients);
-        float scalingFactor = coefficients[^1];
-        coefficients = coefficients.Select(c => c / scalingFactor).ToList();
-    }
-
-    /// <summary>
     /// Create a normalized version of the polynomial (leading coefficient is 1).
     /// </summary>
     /// <returns>A normalized version of the polynomial (leading coefficient is 1).</returns>
     public readonly Polynomial Normalized()
     {
-        var coefficients = new List<float>(Coefficients);
-        float scalingFactor = coefficients[^1];
-        coefficients = coefficients.Select(c => c / scalingFactor).ToList();
-        return new Polynomial(coefficients);
+        if (Coefficients.Length == 0 || Coefficients[^1] == 0)
+        {
+            return new Polynomial([0]);
+        }
+
+        float scalingFactor = Coefficients[^1];
+        var normalizedCoefficients = Coefficients.Select(c => c / scalingFactor).ToArray();
+        return new Polynomial(normalizedCoefficients);
     }
 
     /// <summary>
@@ -33,9 +27,39 @@ public partial struct Polynomial
     /// <returns>A new Polynomial instance representing the derivative of the original polynomial.</returns>
     public readonly Polynomial PolynomialDerivative()
     {
-        if (Coefficients.Count == 1) return new Polynomial([0f]);
-        var derivativeCoeffs = Coefficients.Select((coeff, index) => coeff * index).Skip(1).ToList();
+        if (Coefficients.Length <= 1) return new Polynomial([0]);
+
+        var derivativeCoeffs = new float[Coefficients.Length - 1];
+        for (int i = 1; i < Coefficients.Length; i++)
+        {
+            derivativeCoeffs[i - 1] = Coefficients[i] * i;
+        }
         return new Polynomial(derivativeCoeffs);
+    }
+
+    /// <summary>
+    /// Shifts the polynomial coefficients by one degree lower, effectively removing the constant term.
+    /// This operation creates a new polynomial where each coefficient's degree is lowered by one,
+    /// and the constant term is removed from the array.
+    /// For example, if the polynomial was 3 + 2X + X^2, it becomes 2 + X after the shift.
+    /// </summary>
+    /// <returns>A new <see cref="Polynomial"/> instance with coefficients shifted by one degree lower.</returns>
+    public readonly Polynomial ShiftCoefficientsBy1()
+    {
+        if (Coefficients.Length <= 1)
+        {
+            // If there's only a constant term (or none), return a polynomial that represents 0.
+            return new Polynomial([0]);
+        }
+
+        // Create a new array for coefficients with one less element.
+        float[] shiftedCoefficients = new float[Coefficients.Length - 1];
+
+        // Copy the coefficients starting from index 1 (skip the constant term) to the new array.
+        Array.Copy(Coefficients, 1, shiftedCoefficients, 0, Coefficients.Length - 1);
+
+        // Return a new Polynomial instance with the shifted coefficients.
+        return new Polynomial(shiftedCoefficients);
     }
 
     /// <summary>
@@ -48,7 +72,7 @@ public partial struct Polynomial
         var gcd = PolynomialGCD(this, derivative);
 
         // If the GCD is a constant, the original polynomial is already square-free.
-        if (gcd.Coefficients.Count == 1 && gcd.Coefficients[0] == 1)
+        if (gcd.Coefficients.Length == 1 && MathF.Abs(gcd.Coefficients[0] - 1) < float.Epsilon)
         {
             return this;
         }
@@ -69,55 +93,55 @@ public partial struct Polynomial
         var dividendCoeffs = dividend.Coefficients;
         var divisorCoeffs = divisor.Coefficients;
 
-        if (divisorCoeffs.All(coefficient => coefficient == 0))
+        if (divisorCoeffs.All(coefficient => MathF.Abs(coefficient) < float.Epsilon))
         {
-            throw new DivideByZeroException();
+            throw new DivideByZeroException("Attempted to divide by a zero polynomial.");
         }
 
-        int len_diff = dividendCoeffs.Count - divisorCoeffs.Count;
+        int len_diff = dividendCoeffs.Length - divisorCoeffs.Length;
         if (len_diff < 0)
         {
-            return (new Polynomial([0f]), dividend);
+            // When dividend's degree is less than divisor's, quotient is 0, and remainder is the dividend.
+            return (new Polynomial([0]), dividend);
         }
 
-        var quotient = new List<double>();
-        var remainder = dividendCoeffs.Select(x => (double)x).ToList();
-        double normalizer = divisorCoeffs.Last();
+        var quotientCoeffs = new List<float>();
+        var remainderCoeffs = new List<float>(dividendCoeffs);
+        float normalizer = divisorCoeffs.Last();
 
         for (int i = 0; i <= len_diff; i++)
         {
             // Calculate the scale factor for the divisor to subtract from the dividend
-            double scale = remainder[^1] / normalizer;
-            quotient.Insert(0, scale); // Insert at the beginning to maintain the order from highest to lowest degree
+            float scale = remainderCoeffs[^1] / normalizer;
+            quotientCoeffs.Insert(0, scale); // Insert at the beginning to maintain the order from highest to lowest degree
 
             // Subtract the scaled divisor from the remainder
-            for (int j = 0; j < divisorCoeffs.Count; j++)
+            for (int j = 0; j < divisorCoeffs.Length; j++)
             {
-                // Subtract the scaled value from the corresponding remainder coefficient
-                remainder[remainder.Count - divisorCoeffs.Count + j] -= scale * divisorCoeffs[j];
+                int remainderIndex = remainderCoeffs.Count - divisorCoeffs.Length + j;
+                if (remainderIndex < remainderCoeffs.Count)
+                {
+                    remainderCoeffs[remainderIndex] -= scale * divisorCoeffs[j];
+                }
             }
 
             // Remove the last element of the remainder as it's been fully processed
-            remainder.RemoveAt(remainder.Count - 1);
+            remainderCoeffs.RemoveAt(remainderCoeffs.Count - 1);
         }
 
-        // Convert the remainder back to float for the output, trimming leading zeros
-        var trimmedRemainder = remainder.Select(x => (float)x).ToList();
-        while (trimmedRemainder.Count > 0 && trimmedRemainder[^1] == 0)
+        // Trim leading zeros from the remainder
+        while (remainderCoeffs.Count > 1 && MathF.Abs(remainderCoeffs.Last()) < float.Epsilon)
         {
-            trimmedRemainder.RemoveAt(trimmedRemainder.Count - 1);
+            remainderCoeffs.RemoveAt(remainderCoeffs.Count - 1);
         }
 
-        // Convert the quotient to the required float format, though it's calculated as double
-        var finalQuotient = quotient.Select(x => (float)x).ToList();
-
-        // Ensure the remainder is properly formatted for output
-        if (trimmedRemainder.Count == 0)
+        // Ensure at least one zero remains if the remainder is fully divided
+        if (remainderCoeffs.Count == 0)
         {
-            trimmedRemainder.Add(0f);
+            remainderCoeffs.Add(0f);
         }
 
-        return (new Polynomial(finalQuotient), new Polynomial(trimmedRemainder));
+        return (new Polynomial([.. quotientCoeffs]), new Polynomial([.. remainderCoeffs]));
     }
 
     /// <summary>
@@ -132,7 +156,7 @@ public partial struct Polynomial
     public static Polynomial PolynomialGCD(Polynomial a, Polynomial b)
     {
         // Continuously apply the Euclidean algorithm until a remainder of zero is found.
-        while (b.Coefficients.Any(c => c != 0))
+        while (b.Coefficients.Any(c => Math.Abs(c) > float.Epsilon))
         {
             var (_, remainder) = PolynomialDivision(a, b);
             a = b;
@@ -140,8 +164,6 @@ public partial struct Polynomial
         }
 
         // Normalize the leading coefficient to 1 for the GCD.
-        var leadingCoefficient = a.Coefficients.Last();
-        var normalizedCoefficients = a.Coefficients.Select(c => c / leadingCoefficient).ToList();
-        return new Polynomial(normalizedCoefficients);
+        return a.Normalized();
     }
 }

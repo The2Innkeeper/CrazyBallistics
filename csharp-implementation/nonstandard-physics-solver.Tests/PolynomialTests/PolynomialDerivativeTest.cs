@@ -4,7 +4,7 @@ namespace NonstandardPhysicsSolver.Polynomials.Tests;
 
 public class PolynomialDerivativeTest
 {
-    private static void AssertPolynomialDerivative(List<float> originalCoefficients, List<float> expectedDerivativeCoefficients)
+    private static void AssertPolynomialDerivative(float[] originalCoefficients, float[] expectedDerivativeCoefficients)
     {
         // Arrange
         var polynomial = new Polynomial(originalCoefficients);
@@ -14,7 +14,7 @@ public class PolynomialDerivativeTest
         var actual = derivative.Coefficients;
 
         // Assert
-        AssertExtensions.ListsEqual(expectedDerivativeCoefficients, actual);
+        AssertExtensions.ArraysEqual(expectedDerivativeCoefficients, actual);
     }
 
     [Fact]

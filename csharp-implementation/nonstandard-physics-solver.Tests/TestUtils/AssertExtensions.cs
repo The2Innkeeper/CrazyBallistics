@@ -15,14 +15,26 @@
             }
         }
 
+
         public static void ListsEqual(List<float> expected, List<float> actual)
         {
             AssertWithMessage(() => ApproximateComparers.ListsEqual(expected, actual));
         }
 
-        public static void ListsApproximatelyEqual(List<float> expected, List<float> actual, float tolerance = 1e-5f)
+
+        public static void ListsApproximatelyEqual(List<float> expected, List<float> actual)
         {
-            AssertWithMessage(() => ApproximateComparers.ListsApproximatelyEqual(expected, actual, tolerance));
+            AssertWithMessage(() => ApproximateComparers.ListsApproximatelyEqual(expected, actual));
+        }
+
+        public static void ArraysEqual(float[] expected, float[] actual)
+        {
+            AssertWithMessage(() => ApproximateComparers.ArraysEqual(expected, actual));
+        }
+
+        public static void ArraysApproximatelyEqual(float[] expected, float[] actual, float tolerance = 1e-5f)
+        {
+            AssertWithMessage(() => ApproximateComparers.ArraysApproximatelyEqual(expected, actual, tolerance));
         }
 
         public static void FloatsApproximatelyEqual(float expected, float actual, float tolerance = 1e-5f)

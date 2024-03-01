@@ -8,9 +8,9 @@ public class GcdPolynomialsTest
     {
         Polynomial actual = Polynomial.PolynomialGCD(p, q);
         // Make sure they are both normalized or there can be mistakes
-        actual.Normalize();
-        expected.Normalize();
-        AssertExtensions.ListsApproximatelyEqual(actual.Coefficients, expected.Coefficients);
+        actual = actual.Normalized();
+        expected = expected.Normalized();
+        AssertExtensions.ArraysApproximatelyEqual(actual.Coefficients, expected.Coefficients);
     }
 
     [Fact]

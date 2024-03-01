@@ -8,7 +8,7 @@ public class LMQUpperBoundCalculatorTests
     public void LMQUpperBound_WithValidCoefficients_ReturnsCorrectBound()
     {
         // Arrange
-        var coeffs = new List<float> { 1, -2, -1, 2, 3 }; // 3x^4 + 2x^3 - x^2 - 2x + 1
+        var coeffs = new float[] { 1, -2, -1, 2, 3 }; // 3x^4 + 2x^3 - x^2 - 2x + 1
         var polynomial = new Polynomial(coeffs);
         /* 
          * To calculate this bound by hand, start from the highest degree negative coefficient,
@@ -24,7 +24,7 @@ public class LMQUpperBoundCalculatorTests
          * Then we take the maximum of these minimums.
          * max(2/3, cbrt(4/3)) = cbrt(4/3) = 1.10064242
         */
-        float expectedBound = (float)Math.Pow(4.0 / 3.0, 1.0 / 3.0);
+        float expectedBound = MathF.Pow(4.0f / 3.0f, 1.0f / 3.0f);
 
         // Act
         var bound = polynomial.LMQPositiveUpperBound();

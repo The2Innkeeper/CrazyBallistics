@@ -14,8 +14,8 @@ public class PolynomialDivisionTests
         {
             var (quotient, remainder) = Polynomial.PolynomialDivision(dividend, divisor);
 
-            AssertExtensions.ListsApproximatelyEqual(expectedQuotient.Coefficients, quotient.Coefficients);
-            AssertExtensions.ListsApproximatelyEqual(expectedRemainder.Coefficients, remainder.Coefficients);
+            AssertExtensions.ArraysApproximatelyEqual(expectedQuotient.Coefficients, quotient.Coefficients);
+            AssertExtensions.ArraysApproximatelyEqual(expectedRemainder.Coefficients, remainder.Coefficients);
         }
     }
 

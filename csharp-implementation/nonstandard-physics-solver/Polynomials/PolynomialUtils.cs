@@ -1,13 +1,18 @@
 ﻿using NonstandardPhysicsSolver.Polynomials;
 
-namespace PolynomialUtils;
-
-public static class PolynomialUtils
+namespace PolynomialUtils
 {
-    public static List<float> NormalizedCoefficients(Polynomial polynomial)
+    public static class PolynomialUtils
     {
-        var coefficients = new List<float>(polynomial.Coefficients);
-        float scalingFactor = coefficients[^1];
-        return coefficients.Select(c => c / scalingFactor).ToList();
+        public static float[] NormalizedCoefficients(Polynomial polynomial)
+        {
+            // Clone the coefficients array properly and cast to float[] if necessary
+            var coefficients = polynomial.Coefficients.Clone() as float[];
+            if (coefficients == null || coefficients.Length == 0) return []; // Ensure there's at least one coefficient to avoid division by zero
+
+            float scalingFactor = coefficients[^1]; // Use the last coefficient as the scaling factor
+            // Normalize coefficients and convert the result back to an array
+            return coefficients.Select(c => c / scalingFactor).ToArray();
+        }
     }
 }

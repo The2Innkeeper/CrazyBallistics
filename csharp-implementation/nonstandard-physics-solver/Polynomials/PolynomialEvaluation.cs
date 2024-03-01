@@ -10,13 +10,13 @@ public partial struct Polynomial
     /// <exception cref="ArgumentException">Thrown when the coefficients list is null or empty.</exception>
     public readonly float EvaluatePolynomialAccurate(float x)
     {
-        if (Coefficients == null || Coefficients.Count == 0)
+        if (Coefficients == null || Coefficients.Length == 0)
             throw new ArgumentException("Coefficients list cannot be null or empty.");
 
         float sum = Coefficients[^1]; // Start with the last coefficient
         float comp = 0.0f; // Compensation for lost low-order bits
 
-        for (int coeff_i = Coefficients.Count - 2; coeff_i >= 0; coeff_i--)
+        for (int coeff_i = Coefficients.Length - 2; coeff_i >= 0; coeff_i--)
         {
             float y = Coefficients[coeff_i] + comp; // Add the compensation
             float t = sum * x + y; // Horner's method step
@@ -35,13 +35,13 @@ public partial struct Polynomial
     /// <exception cref="ArgumentException">Thrown when the coefficients list is null or empty.</exception>
     public readonly double EvaluatePolynomialAccurateDouble(double x)
     {
-        if (Coefficients == null || Coefficients.Count == 0)
+        if (Coefficients == null || Coefficients.Length == 0)
             throw new ArgumentException("Coefficients list cannot be null or empty.");
 
         double sum = Coefficients[^1]; // Start with the last coefficient
         double comp = 0.0; // Compensation for lost low-order bits
 
-        for (int coeff_i = Coefficients.Count - 2; coeff_i >= 0; coeff_i--)
+        for (int coeff_i = Coefficients.Length - 2; coeff_i >= 0; coeff_i--)
         {
             double y = Coefficients[coeff_i] + comp; // Add the compensation
             double t = sum * x + y; // Horner's method step
@@ -61,13 +61,13 @@ public partial struct Polynomial
     /// <remarks>It takes on average around 2, up to 3 times as many calculations as Horner's method.</remarks>
     public readonly float EvaluatePolynomialExtraAccurate(float x)
     {
-        if (Coefficients == null || Coefficients.Count == 0)
+        if (Coefficients == null || Coefficients.Length == 0)
             throw new ArgumentException("Coefficients list cannot be null or empty.");
 
         double sum = Coefficients[^1]; // Start with the last coefficient
         double comp = 0.0f; // Compensation for lost low-order bits
 
-        for (int coeff_i = Coefficients.Count - 2; coeff_i >= 0; coeff_i--)
+        for (int coeff_i = Coefficients.Length - 2; coeff_i >= 0; coeff_i--)
         {
             double y = Coefficients[coeff_i] + comp; // Add the compensation
             double t = sum * x + y; // Horner's method step
@@ -86,13 +86,13 @@ public partial struct Polynomial
     /// <exception cref="ArgumentException">Thrown when the coefficients list is null or empty.</exception>
     public readonly double EvaluatePolynomialAccurate(double x)
     {
-        if (Coefficients == null || Coefficients.Count == 0)
+        if (Coefficients == null || Coefficients.Length == 0)
             throw new ArgumentException("Coefficients list cannot be null or empty.");
 
         double sum = Coefficients[^1]; // Start with the last coefficient
         double comp = 0.0f; // Compensation for lost low-order bits
 
-        for (int coeff_i = Coefficients.Count - 2; coeff_i >= 0; coeff_i--)
+        for (int coeff_i = Coefficients.Length - 2; coeff_i >= 0; coeff_i--)
         {
             double y = Coefficients[coeff_i] + comp; // Add the compensation
             double t = sum * x + y; // Horner's method step
@@ -110,7 +110,7 @@ public partial struct Polynomial
     /// <returns>The result of the polynomial evaluation.</returns>
     public readonly float EvaluatePolynomialHorner(float inputValue)
     {
-        int degree = Coefficients.Count - 1;
+        int degree = Coefficients.Length - 1;
         float hornerResult = Coefficients[degree];
         for (int coeff_i = degree - 1; coeff_i >= 0; coeff_i--)
         {

@@ -6,7 +6,7 @@ using Xunit;
 
 public class MakeSquareFreeTests
 {
-    private static void AssertSquareFreeTransformation(List<float> originalCoefficients, List<float> expectedCoefficients)
+    private static void AssertSquareFreeTransformation(float[] originalCoefficients, float[] expectedCoefficients)
     {
         // Arrange
         var polynomial = new Polynomial(originalCoefficients);
@@ -16,7 +16,7 @@ public class MakeSquareFreeTests
         var actualCoefficients = PolynomialUtils.NormalizedCoefficients(squareFreePolynomial);
 
         // Assert
-        AssertExtensions.ListsApproximatelyEqual(expectedCoefficients, actualCoefficients);
+        AssertExtensions.ArraysApproximatelyEqual(expectedCoefficients, actualCoefficients);
     }
 
     [Fact]

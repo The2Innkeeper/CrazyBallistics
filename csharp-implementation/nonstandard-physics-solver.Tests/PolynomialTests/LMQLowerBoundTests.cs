@@ -9,8 +9,8 @@ public class LMQLowerBoundTests
     public void LMQLowerBound_WithValidCoefficients_ReturnsCorrectBound()
     {
         // Arrange
-        var coeffs = new List<float> { 1, -2, -1, 2, 3 }; // 3x^4 + 2x^3 - x^2 - 2x + 1
-        coeffs.Reverse(); // x^4 - 2x^3 - x^2 + 2x + 3
+        float[] coeffs = [1, -2, -1, 2, 3]; // 3x^4 + 2x^3 - x^2 - 2x + 1
+        Array.Reverse(coeffs); // x^4 - 2x^3 - x^2 + 2x + 3
         var polynomial = new Polynomial(coeffs);
         /* 
          * To calculate this bound by hand, start from the highest degree negative coefficient,
