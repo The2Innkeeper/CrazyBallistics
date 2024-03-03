@@ -1,7 +1,6 @@
 ﻿namespace NonstandardPhysicsSolver.Polynomials.Tests.PolynomialTests;
 
 using NonstandardPhysicsSolver.Intervals;
-using System;
 using Xunit;
 
 public class MobiusTransformationTests
@@ -13,11 +12,11 @@ public class MobiusTransformationTests
     //    Assert.Null(Record.Exception((Func<MobiusTransformation>)action));
     //}
 
-    [Fact]
-    public void Constructor_InvalidParameters_ShouldThrowArgumentException()
-    {
-        Assert.Throws<ArgumentException>(() => new MobiusTransformation(1, 2, 2, 4));
-    }
+    //[Fact]
+    //public void Constructor_InvalidParameters_ShouldThrowArgumentException()
+    //{
+    //    Assert.Throws<ArgumentException>(() => new MobiusTransformation(1, 2, 2, 4));
+    //}
 
     [Fact]
     public void ProcessUnitInterval_CorrectTransformation()
@@ -58,7 +57,7 @@ public class MobiusTransformationTests
     [Fact]
     public void Scale_CorrectScaling()
     {
-        var transformation = new MobiusTransformation(1, 2, 3, 4).Scale(2);
+        var transformation = new MobiusTransformation(1, 2, 3, 4).ScaleInput(2);
         Assert.Equal(new MobiusTransformation(2, 2, 6, 4), transformation);
     }
 }

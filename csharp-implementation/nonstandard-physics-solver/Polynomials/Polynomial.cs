@@ -6,7 +6,7 @@ public partial struct Polynomial
     /// <summary>
     /// List of coefficients in increasing order of degree
     /// </summary>
-    public readonly float[] Coefficients { get; }
+    public float[] Coefficients { get; }
 
     public Polynomial(float[] coefficients)
     {
@@ -60,7 +60,7 @@ public partial struct Polynomial
     /// <param name="index">The zero-based index where the coefficient is to be updated.</param>
     /// <param name="newValue">The new value of the coefficient at the specified index.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the index is outside the bounds of the Coefficients list.</exception>
-    public readonly void UpdateCoefficient(int index, float newValue)
+    public void UpdateCoefficient(int index, float newValue)
     {
         // Validate the index before attempting to update
         if (index < 0 || index >= Coefficients.Length)

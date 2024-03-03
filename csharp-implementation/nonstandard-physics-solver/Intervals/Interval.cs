@@ -27,14 +27,14 @@ public partial struct Interval
     }
 
     // Indexer to access bounds like an array
-    public readonly float this[int index] => index switch
+    public float this[int index] => index switch
     {
         0 => LeftBound,
         1 => RightBound,
         _ => throw new IndexOutOfRangeException("Valid indexes are 0 for LeftBound and 1 for RightBound."),
     };
 
-    public readonly bool ContainsValue(float value)
+    public bool ContainsValue(float value)
     {
         if (float.IsNaN(value))
         {
@@ -48,7 +48,7 @@ public partial struct Interval
     /// </summary>
     /// <param name="polynomial">The polynomial to check against.</param>
     /// <returns>True if the interval contains at least one root, otherwise false.</returns>
-    public readonly bool ContainsRoot(Polynomial polynomial)
+    public bool ContainsRoot(Polynomial polynomial)
     {
         // Checking sign change as a necessary condition for a root in the interval
         float valueAtLeft = polynomial.EvaluatePolynomialAccurate(LeftBound);

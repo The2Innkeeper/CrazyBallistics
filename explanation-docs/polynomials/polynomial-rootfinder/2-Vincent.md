@@ -129,15 +129,60 @@ As you can see we need a transformation of the kind $M(s/(1+x))$. Let's see how 
 $$M\left(\frac s{1+x}\right) = \frac{a(\frac{s}{1+x})+b}{c(\frac{s}{1+x})+d}=\frac{as+b(1+x)}{cs+d(1+x)}=\frac{(b)x+(as+b)}{(d)x+(cs+d)}$$
 Therefore $$a:=b \\ b:=b+as \\ c:=d \\ d:=d+cs$$
 
-Now for the polynomial $(x+1)^n P(\frac{s}{x+1})$... it is probably too complicated to do in 1 step, so we will use the composition of transformations discussed earlier. We will break it down into
-
+Now for the polynomial $(x+1)^n P(\frac{s}{x+1})$... it is probably too complicated to do in 1 step, so we will use the composition of transformations discussed earlier. We will break it down into a composition by making substitution and backtracking our steps.
 $$
 \begin{aligned}
-& \textbf{Transformation } P(x):=(x+1)^n P\left(\frac{s}{x+1}\right) \\
-& \quad \text{1. } x:=x+1\\
-& \quad \text{2. } P(x):=x^nP\left(\frac{1}{x}\right) \\
-& \quad \text{3. } x:=sx
+&1. \space \frac s {x+1} && \mapsto \frac s x && (x+1:=x) \\
+&2. \space \frac s x && \mapsto sx && (\frac 1 x=:x) \\
+&3. \space && sx \mapsto x && (sx=:x)
 \end{aligned}
 $$
 
-All in all we get the same transformation.
+Therefore we will perform the transformations in the order
+$$
+\begin{aligned}
+&1. \space x:=sx \\
+&2. \space x:=\frac 1 x \\
+&3. \space x:=x+1
+\end{aligned}
+$$
+
+Still not working after a long while, I think [logcf (arXiv:1209.3555)](https://arxiv.org/pdf/1209.3555.pdf) should be good:
+
+$$
+\begin{aligned}
+& \textbf{Algorithm 4. cf} \\
+& \textbf{Input: } \text{A squarefree polynomial } F \in Z[x] \setminus \{0\}. \\
+& \textbf{Output: } \text{roots, a list of isolating intervals of positive roots of } F. \\
+& 1 \quad \text{roots} = \emptyset; \quad s = V (F); \\
+& 2 \quad \text{intstack} = \emptyset; \quad \text{intstack.add}(\{1, 0, 0, 1, F, s\}); \\
+& 3 \quad \text{while intstack} \neq \emptyset \text{ do} \\
+& 4 \quad \quad \{a, b, c, d, P, s\} = \text{intstack.pop()}; \quad \text{/* pop the first element */} \\
+& 5 \quad \quad \alpha = \text{loglb}(P); \\
+& 6 \quad \quad \text{if } \alpha \geq 1 \text{ then} \\
+& 7 \quad \quad \quad \{a, c, P\} = \{\alpha a, \alpha c, H_\alpha(P)\}; \quad \{b, d, P\} = \{a + b, c + d, T(P)\}; \\
+& 8 \quad \quad \quad \text{if } P(0) == 0 \text{ then} \\
+& 9 \quad \quad \quad \quad \text{roots.add}([ \frac{b}{d}, \frac{b}{d} ]) ; \quad P = \frac{P}{x} ; \\
+& 10 \quad \quad \quad \quad s = V (P); \\
+& 11 \quad \quad \quad \quad \text{if } s == 0 \text{ then} \\
+& 12 \quad \quad \quad \quad \quad \text{continue}; \\
+& 13 \quad \quad \quad \quad \text{else if } s == 1 \text{ then} \\
+& 14 \quad \quad \quad \quad \quad \text{roots.add(intvl(a, b, c, d)); continue}; \\
+& 15 \quad \quad \quad \quad \{P1, a1, b1, c1, d1, r\} = \{T(P), a, a + b, c, c + d, 0\} \\
+& 16 \quad \quad \quad \quad \text{if } P1(0) == 0 \text{ then} \\
+& 17 \quad \quad \quad \quad \quad \text{roots.add}([ \frac{b1}{d1}, \frac{b1}{d1} ]); \quad P1 = \frac{P1}{x} ; \quad r = 1; \\
+& 18 \quad \quad \quad \quad s1 = V (P1); \quad \{s2, a2, b2, c2, d2\} = \{s - s1 - r, b, a + b, d, c + d\}; \\
+& 19 \quad \quad \quad \quad \text{if } s2 > 1 \text{ then} \\
+& 20 \quad \quad \quad \quad \quad P2 = (x + 1)^{\text{deg}(P)}T(P); \\
+& 21 \quad \quad \quad \quad \quad \text{if } P2(0) == 0 \text{ then} \\
+& 22 \quad \quad \quad \quad \quad \quad P2 = \frac{P2}{x} ; \quad s2 = V (P2); \\
+& 23 \quad \quad \quad \quad \quad \text{if } s1 == 1 \text{ then} \\
+& 24 \quad \quad \quad \quad \quad \quad \text{roots.add(intvl(a1, b1, c1, d1))}; \\
+& 25 \quad \quad \quad \quad \quad \text{else if } s1 > 1 \text{ then} \\
+& 26 \quad \quad \quad \quad \quad \quad \text{intstack.add}(\{a1, b1, c1, d1, P1, s1\}); \\
+& 27 \quad \quad \quad \quad \quad \text{if } s2 == 1 \text{ then} \\
+& 28 \quad \quad \quad \quad \quad \quad \text{roots.add(intvl(a2, b2, c2, d2))}; \\
+& 29 \quad \quad \quad \quad \quad \text{else if } s2 > 1 \text{ then} \\
+& 30 \quad \quad \quad \quad \quad \quad \text{intstack.add}(\{a2, b2, c2, d2, P2, s2\});
+\end{aligned}
+$$

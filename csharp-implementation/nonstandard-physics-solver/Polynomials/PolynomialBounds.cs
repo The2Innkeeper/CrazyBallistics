@@ -8,7 +8,7 @@ public partial struct Polynomial
     /// </summary>
     /// <returns>The LMQ bound as a float, representing an upper bound on the polynomial's positive roots.</returns>
     /// <exception cref="ArgumentException">Thrown when the coefficients list is null or empty.</exception>
-    public readonly float LMQPositiveUpperBound()
+    public float LMQPositiveUpperBound()
     {
         int coefficientCount = Coefficients.Length;
         // Validate input
@@ -67,7 +67,7 @@ public partial struct Polynomial
     /// Notice that when working that way, degree(neg_i) = n - neg_i and degree(pos_i) = n - pos_i
     /// And note: neg_i > pos_i
     /// </remarks>
-    public readonly float LMQPositiveLowerBound()
+    public float LMQPositiveLowerBound()
     {
         int coefficientCount = Coefficients.Length;
         // Validate input

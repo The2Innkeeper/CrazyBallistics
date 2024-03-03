@@ -8,129 +8,199 @@ public partial struct Polynomial
     /// Take a polynomial and find a list of intervals each containing a single root.
     /// </summary>
     /// <returns>A list of (float leftBound, float rightBound) tuples as intervals each containing a single root.</returns>
-    public List<Interval> IsolateRootIntervalsContinuedFractions()
+    public List<Interval> IsolatePositiveRootIntervalsContinuedFractions()
     {
-        var tasks = new Queue<(Polynomial polynomial, MobiusTransformation mobius)>();
-        tasks.Enqueue((this.MakeSquareFree(), new MobiusTransformation(1, 0, 0, 1)));
+        // Validate input
+        CheckEmptyCoefficients(Coefficients);
+        if (!HasPositiveRoots(Coefficients)) return [];
+
+        /* Initialize:
+         * P(x) = SquareFree(P(x))
+         * M(x) = x = (1x+0)/(0x+1)
+         * varCount = Var(P)
+         * rootIntervals = { (P(x), M(x), varCount) }
+         */
+        int initialSignVariationCount = this.CountSignVariations();
+        var tasks = new Queue<(Polynomial polynomial, MobiusTransformation mobius, int signVariationCount)>();
+        tasks.Enqueue((this.MakeSquareFree(), MobiusTransformation.Identity(), initialSignVariationCount));
         var isolatedRootIntervals = new List<Interval>();
 
-        int coefficientCount = Coefficients.Length;
-        // Validate input
-        if (Coefficients == null || coefficientCount == 0)
-        {
-            throw new ArgumentException("The coefficients list cannot be null or empty.");
-        }
-        if (!Coefficients.Any(coeff => coeff <= 0)) // If all coefficients are strictly positive, there will be no positive roots
-        {
-            return [];
-        }
 
         while (tasks.Count > 0)
         {
-            (Polynomial currentPolynomial, MobiusTransformation currentMobius) = tasks.Dequeue();
+            (Polynomial currentPolynomial, MobiusTransformation currentMobius, int variationCount0ToInf) = tasks.Dequeue();
 
+            // Handle edge cases
             // Empty coefficients
             if (currentPolynomial.Coefficients.Length == 0) { continue; }
             // Constant function only has zeroes if it is the zero function
-            if (currentPolynomial.Coefficients.Length == 1 && currentPolynomial.Coefficients[0] == 0)
+            if (HandleZeroFunction(ref isolatedRootIntervals, currentPolynomial)) { break; }
+            // Check for NaN in coefficients before proceeding
+            ValidateCoefficientsForNaN(currentPolynomial.Coefficients);
+
+
+            // Main algorithm
+            float lowerBound = currentPolynomial.LMQPositiveLowerBound(); // Implement this based on your strategy
+            AdjustForLowerBound(ref currentPolynomial, ref currentMobius, lowerBound);
+
+            // Divide by x if needed (input polynomial is squarefree so only once is OK)
+            CheckAndHandleRootAtZero(ref isolatedRootIntervals, ref currentPolynomial, currentMobius);
+
+            if (variationCount0ToInf == 0) continue; // No roots, exit
+            if (variationCount0ToInf == 1) // 1 root, add to isolated and exit
             {
-                AddIntervalWithoutDuplicates(ref isolatedRootIntervals, 0, float.PositiveInfinity);
+                AddMobiusIntervalAdjusted(ref isolatedRootIntervals, currentMobius, this);
+                continue;
+            }
+            // If var(P) > 1 then proceed to splitting into ]0,1[, [1,1] and ]1,+inf[
+
+            // Starting with ]1,+inf[ because it only requires a Taylor shift, compared to
+            // ]0,1[ where it needs a Taylor shift + reversion
+            // ]1,+inf[
+            // x:= x+1
+            Polynomial polynomial1ToInf = currentPolynomial.TaylorShift(1);
+            MobiusTransformation mobius1ToInf = currentMobius.TaylorShift(1);
+
+            // [1,1]
+            int foundRootAt1 = 0;
+            foundRootAt1 += CheckAndHandleRootAtZero(ref isolatedRootIntervals, ref polynomial1ToInf, mobius1ToInf) ? 1 : 0;
+
+            int variationCount1ToInf = polynomial1ToInf.CountSignVariations();
+            if (variationCount1ToInf == 1)
+            {
+                AddMobiusIntervalAdjusted(ref isolatedRootIntervals, mobius1ToInf, this);
+            }
+            else if (variationCount1ToInf > 1)
+            {
+                tasks.Enqueue((polynomial1ToInf, mobius1ToInf, variationCount1ToInf));
+            }
+
+            // ]0, 1[
+            int variationCount0To1 = variationCount0ToInf - variationCount1ToInf - foundRootAt1;
+            if (variationCount0To1 == 0) { continue; } // No roots in this interval, avoid extra computation
+            // x := 1/(1+x)
+            Polynomial polynomial0To1 = currentPolynomial.TransformedForLowerInteval(1);
+            MobiusTransformation mobius0To1 = currentMobius.TransformedForLowerInterval(1);
+            if (variationCount0To1 == 1)
+            {
+                AddMobiusIntervalAdjusted(ref isolatedRootIntervals, mobius0To1, this);
                 continue;
             }
 
-            // Check for NaN in coefficients before proceeding
-            for (int i = 0; i < currentPolynomial.Coefficients.Length; i++)
+            if (polynomial0To1.Coefficients[0] < float.Epsilon) polynomial0To1 = polynomial0To1.ShiftCoefficientsBy1();
+            tasks.Enqueue((polynomial0To1, mobius0To1, variationCount0To1));
+        }
+
+        return isolatedRootIntervals;
+
+        static void CheckEmptyCoefficients(float[] coefficients)
+        {
+            // Validate input
+            if (coefficients == null || coefficients.Length == 0)
             {
-                if (float.IsNaN(currentPolynomial.Coefficients[i]))
+                throw new ArgumentException("The coefficients list cannot be null or empty.");
+            }
+        }
+
+        static bool HasPositiveRoots(float[] coefficients)
+        {
+            if (!coefficients.Any(coeff => coeff <= 0)) // If all coefficients are strictly positive, there will be no positive roots
+            {
+                return false;
+            }
+            return true;
+        }
+
+        static void ValidateCoefficientsForNaN(float[] coefficients)
+        {
+            for (int i = 0; i < coefficients.Length; i++)
+            {
+                if (float.IsNaN(coefficients[i]))
                 {
                     // Log the detection of NaN
                     Console.WriteLine($"NaN detected in polynomial coefficients at index {i}.");
                     // Throw an exception or handle it as necessary
                     throw new ArgumentException($"NaN detected in polynomial coefficients at index {i}." +
-                        $"\nPolynomial coefficients: {string.Join(", ", currentPolynomial.Coefficients)}");
+                        $"\nPolynomial coefficients: {string.Join(", ", coefficients)}");
                 }
             }
-
-            // Divide by x if needed (input polynomial is squarefree)
-            if (currentPolynomial.Coefficients[0] == 0)
-            {
-                currentPolynomial = currentPolynomial.ShiftCoefficientsBy1();
-                AddIntervalWithoutDuplicates(ref isolatedRootIntervals, 0f, 0f);
-            }
-
-
-            // Main algorithm
-            int signVariationCount = currentPolynomial.CountSignVariations();
-            if (signVariationCount == 0) continue; // No roots, exit
-            if (signVariationCount == 1)
-            {
-                Interval mobiusImage = currentMobius.PositiveDomainImage();
-                if (mobiusImage.RightBound == float.PositiveInfinity)
-                {
-                    float updatedRightBound = currentPolynomial.LMQPositiveUpperBound();
-                    AddIntervalWithoutDuplicates(ref isolatedRootIntervals, mobiusImage.LeftBound, updatedRightBound); // Exactly one root, add interval
-                    continue;
-                }
-
-                AddIntervalWithoutDuplicates(ref isolatedRootIntervals, mobiusImage.LeftBound, mobiusImage.RightBound); // Exactly one root, add interval
-                continue; // Exit after adding interval
-            }
-
-            float lowerBound = currentPolynomial.LMQPositiveLowerBound(); // Implement this based on your strategy
-            if (lowerBound >= 1)
-            {
-                currentPolynomial = currentPolynomial.TaylorShift(lowerBound);
-                currentMobius = currentMobius.TaylorShift(lowerBound);
-            }
-
-            Polynomial polynomial1ToInf = currentPolynomial.TaylorShift(1);
-            MobiusTransformation mobius1ToInf = currentMobius.TaylorShift(1);
-
-            //polynomial1ToInf = currentPolynomial.TransformedForLowerInteval(lowerBound);
-            //mobius1ToInf = currentMobius.TransformedForLowerInterval(lowerBound);
-
-            if (polynomial1ToInf.Coefficients[0] < float.Epsilon) // Check for a root at x = 0 after the shift
-            {
-                // This code is causing duplicates, I will try removing it
-                //float root = mobius1ToInf.EvaluateAt(0);
-                //AddIntervalWithoutDuplicates(ref isolatedRootIntervals, root, root);
-                polynomial1ToInf = polynomial1ToInf.ShiftCoefficientsBy1(); // Implement method to divide by x and reduce degree
-            }
-
-            // Search for roots in ] M(1), M(+inf) [, which we practically reduce to ] M(1), M(upperBound) [ if needed
-            tasks.Enqueue((polynomial1ToInf, mobius1ToInf));
-
-            int signVariationCountChange = signVariationCount - polynomial1ToInf.CountSignVariations();
-            if (signVariationCountChange == 0) { continue; }
-            if (signVariationCountChange == 1)
-            {
-                AddIntervalWithoutDuplicates(ref isolatedRootIntervals, currentMobius.EvaluateAt(0), currentMobius.EvaluateAt(lowerBound));
-                continue;
-            }
-
-            if (!(signVariationCountChange > 1)) continue;
-            // Roots are possibly in the interval before the shift ] M(0), M(1) [
-            // x := 1/(1+x)
-            Polynomial polynomial0To1 = currentPolynomial.TransformedForLowerInteval(1);
-            MobiusTransformation mobius0To1 = currentMobius.TransformedForLowerInterval(1);
-            if (polynomial0To1.Coefficients[0] < float.Epsilon) polynomial0To1 = polynomial0To1.ShiftCoefficientsBy1();
-            // x := b/(1+x)
-            //Polynomial polynomial0To1 = currentPolynomial.TransformedForLowerInteval(lowerBound);
-            //MobiusTransformation mobius0To1 = currentMobius.TransformedForLowerInterval(lowerBound);
-            tasks.Enqueue((polynomial0To1, mobius0To1));
         }
 
-        return isolatedRootIntervals;
-
-        // New method to check and add intervals without duplicates
-        static void AddIntervalWithoutDuplicates(ref List<Interval> intervals, float leftBound, float rightBound, float tolerance = 1e-16f)
+        static bool HandleZeroFunction(ref List<Interval> isolatedRootIntervals, Polynomial polynomial)
         {
-            bool isDuplicate = intervals.Any(interval => MathF.Abs(interval.LeftBound - leftBound) < tolerance &&
-                                                          MathF.Abs(interval.RightBound - rightBound) < tolerance);
-            if (!isDuplicate)
+            if (!(polynomial.Coefficients.Length == 1 && polynomial.Coefficients[0] == 0)) { return false; }
+
+            AddIntervalWithoutDuplicates(ref isolatedRootIntervals, new Interval(0, float.PositiveInfinity));
+            return true;
+        }
+
+        static void AdjustForLowerBound(ref Polynomial polynomial, ref MobiusTransformation mobius, float lowerBound)
+        {
+            if (!(lowerBound >= 1)) { return; }
+
+            Polynomial transformedPolynomial = polynomial.ScaleInput(lowerBound).TaylorShift(1);
+            MobiusTransformation transformedMobius = mobius.ScaleInput(lowerBound).TaylorShift(1);
+            polynomial = transformedPolynomial;
+            mobius = transformedMobius;
+        }
+
+        static bool CheckAndHandleRootAtZero(ref List<Interval> intervals, ref Polynomial polynomial, MobiusTransformation mobius)
+        {
+            if (polynomial.Coefficients[0] != 0) return false;
+
+            float root = mobius.EvaluateAt(0f);
+            AddIntervalWithoutDuplicates(ref intervals, new Interval(root, root));
+            polynomial = polynomial.ShiftCoefficientsBy1();
+            return true;
+        }
+
+        static void AddMobiusIntervalAdjusted(ref List<Interval> isolatedRootIntervals, MobiusTransformation mobius, Polynomial initialPolynomial)
+        {
+            Interval mobiusImage = mobius.PositiveDomainImage();
+            if (mobiusImage.RightBound == float.PositiveInfinity)
             {
-                intervals.Add(new Interval(leftBound, rightBound));
+                float updatedRightBound = initialPolynomial.LMQPositiveUpperBound();
+                AddIntervalWithoutDuplicates(ref isolatedRootIntervals, new Interval(mobiusImage.LeftBound, updatedRightBound)); // Exactly one root, add interval
+                return;
             }
+
+            AddIntervalWithoutDuplicates(ref isolatedRootIntervals, mobiusImage); // Exactly one root, add interval
+        }
+
+        // Enhanced method to check and add intervals without duplicates or subintervals
+        static void AddIntervalWithoutDuplicates(ref List<Interval> intervals, Interval newInterval)
+        {
+            for (int i = 0; i < intervals.Count; i++)
+            {
+                Interval existingInterval = intervals[i];
+                bool isDuplicate = existingInterval.LeftBound == newInterval.LeftBound &&
+                                    existingInterval.RightBound == newInterval.RightBound;
+                if (isDuplicate)
+                {
+                    return;
+                }
+                // Subinterval: left bound of must be to the right (larger) and right bound must be to the left (smaller)
+                // Note that Budan's theorem works for open-closed intervals ]a,b]
+                bool isExistingSubintervalOfNew = existingInterval.LeftBound > newInterval.LeftBound &&
+                                                   existingInterval.RightBound <= newInterval.RightBound;
+                bool isNewSubintervalOfExisting = newInterval.LeftBound > existingInterval.LeftBound &&
+                                                   newInterval.RightBound <= existingInterval.RightBound;
+
+                if (isExistingSubintervalOfNew)
+                {
+                    // If the existing interval is a subinterval of the new one, no need to add the new interval.
+                    return;
+                }
+                else if (isNewSubintervalOfExisting)
+                {
+                    // If the new interval is a subinterval of the existing one, replace it as the new one is tighter.
+                    intervals.RemoveAt(i);
+                    i--; // Adjust the index to reflect the removal
+                }
+            }
+
+            // If the new interval is not a subinterval nor contains subintervals, add it.
+            intervals.Add(newInterval);
         }
     }
 
@@ -243,7 +313,7 @@ public partial struct Polynomial
     /// Counts the number of sign variations in the polynomial's coefficients.
     /// </summary>
     /// <returns>The number of sign variations in the polynomial's coefficients.</returns>
-    public readonly int CountSignVariations()
+    public int CountSignVariations()
     {
         int signVariations = 0;
         int previousSign = 0; // 0 indicates no sign determined yet

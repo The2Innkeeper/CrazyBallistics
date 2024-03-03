@@ -31,7 +31,7 @@ public class RootIsolationTests
     {
         // Polynomial with no real roots, e.g., x^2 + 1
         var poly = new Polynomial([1, 0, 1]);
-        var intervals = poly.IsolateRootIntervalsContinuedFractions();
+        var intervals = poly.IsolatePositiveRootIntervalsContinuedFractions();
         Assert.Empty(intervals); // Expect no intervals for a polynomial with no real roots
     }
 
@@ -40,7 +40,7 @@ public class RootIsolationTests
     {
         // Polynomial with a single root, e.g., (x - 1)^2 = x^2 - 2x + 1
         var poly = new Polynomial([1, -2, 1]);
-        var intervals = poly.IsolateRootIntervalsContinuedFractions();
+        var intervals = poly.IsolatePositiveRootIntervalsContinuedFractions();
         AssertExtensions.AssertIntervalsContainRoots(intervals, [1]);
     }
 
@@ -49,7 +49,7 @@ public class RootIsolationTests
     {
         // Polynomial with multiple distinct roots, e.g., x^3 - 6x^2 + 11x - 6 = (x-1)(x-2)(x-3)
         var poly = new Polynomial([-6, 11, -6, 1]);
-        var intervals = poly.IsolateRootIntervalsContinuedFractions();
+        var intervals = poly.IsolatePositiveRootIntervalsContinuedFractions();
         AssertExtensions.AssertIntervalsContainRoots(intervals, [1, 2, 3]);
     }
 
@@ -58,7 +58,7 @@ public class RootIsolationTests
     {
         // Polynomial with a root at 0, e.g., x^2
         var poly = new Polynomial([0, 0, 1]);
-        var intervals = poly.IsolateRootIntervalsContinuedFractions();
+        var intervals = poly.IsolatePositiveRootIntervalsContinuedFractions();
         Assert.Single(intervals); // Expect one interval for a polynomial with a root at 0
         // Check that the interval correctly identifies 0 as a root
         AssertExtensions.AssertIntervalsContainRoots(intervals, [0]);
@@ -70,7 +70,7 @@ public class RootIsolationTests
         // Polynomial with roots very close to each other, requiring accurate interval isolation
         // Example: (x - 0.001)(x - 0.002) = x^2 - 0.003x + 0.000002
         var poly = new Polynomial([0.000002f, -0.003f, 1]);
-        var intervals = poly.IsolateRootIntervalsContinuedFractions();
+        var intervals = poly.IsolatePositiveRootIntervalsContinuedFractions();
         // Transform each interval into a string representation
         var intervalsStr = intervals.Select(interval => $"[{interval.LeftBound}, {interval.RightBound}]").ToArray();
 

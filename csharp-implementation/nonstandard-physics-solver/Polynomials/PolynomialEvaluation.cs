@@ -8,7 +8,7 @@ public partial struct Polynomial
     /// <param name="x">The point at which to evaluate the polynomial.</param>
     /// <returns>The value of the polynomial at point x.</returns>
     /// <exception cref="ArgumentException">Thrown when the coefficients list is null or empty.</exception>
-    public readonly float EvaluatePolynomialAccurate(float x)
+    public float EvaluatePolynomialAccurate(float x)
     {
         if (Coefficients == null || Coefficients.Length == 0)
             throw new ArgumentException("Coefficients list cannot be null or empty.");
@@ -33,7 +33,7 @@ public partial struct Polynomial
     /// <param name="x">The point at which to evaluate the polynomial.</param>
     /// <returns>The value of the polynomial at point x.</returns>
     /// <exception cref="ArgumentException">Thrown when the coefficients list is null or empty.</exception>
-    public readonly double EvaluatePolynomialAccurateDouble(double x)
+    public double EvaluatePolynomialAccurateDouble(double x)
     {
         if (Coefficients == null || Coefficients.Length == 0)
             throw new ArgumentException("Coefficients list cannot be null or empty.");
@@ -59,7 +59,7 @@ public partial struct Polynomial
     /// <returns>The value of the polynomial at point x.</returns>
     /// <exception cref="ArgumentException">Thrown when the coefficients list is null or empty.</exception>
     /// <remarks>It takes on average around 2, up to 3 times as many calculations as Horner's method.</remarks>
-    public readonly float EvaluatePolynomialExtraAccurate(float x)
+    public float EvaluatePolynomialExtraAccurate(float x)
     {
         if (Coefficients == null || Coefficients.Length == 0)
             throw new ArgumentException("Coefficients list cannot be null or empty.");
@@ -84,7 +84,7 @@ public partial struct Polynomial
     /// <param name="x">The point at which to evaluate the polynomial.</param>
     /// <returns>The value of the polynomial at point x.</returns>
     /// <exception cref="ArgumentException">Thrown when the coefficients list is null or empty.</exception>
-    public readonly double EvaluatePolynomialAccurate(double x)
+    public double EvaluatePolynomialAccurate(double x)
     {
         if (Coefficients == null || Coefficients.Length == 0)
             throw new ArgumentException("Coefficients list cannot be null or empty.");
@@ -108,7 +108,7 @@ public partial struct Polynomial
     /// </summary>
     /// <param name="inputValue">The input value at which to evaluate the polynomial.</param>
     /// <returns>The result of the polynomial evaluation.</returns>
-    public readonly float EvaluatePolynomialHorner(float inputValue)
+    public float EvaluatePolynomialHorner(float inputValue)
     {
         int degree = Coefficients.Length - 1;
         float hornerResult = Coefficients[degree];

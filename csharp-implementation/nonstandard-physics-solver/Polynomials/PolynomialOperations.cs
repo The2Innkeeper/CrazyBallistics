@@ -9,7 +9,7 @@ public partial struct Polynomial
     /// Create a normalized version of the polynomial (leading coefficient is 1).
     /// </summary>
     /// <returns>A normalized version of the polynomial (leading coefficient is 1).</returns>
-    public readonly Polynomial Normalized()
+    public Polynomial Normalized()
     {
         if (Coefficients.Length == 0 || Coefficients[^1] == 0)
         {
@@ -25,7 +25,7 @@ public partial struct Polynomial
     /// Calculates the derivative of the polynomial.
     /// </summary>
     /// <returns>A new Polynomial instance representing the derivative of the original polynomial.</returns>
-    public readonly Polynomial PolynomialDerivative()
+    public Polynomial PolynomialDerivative()
     {
         if (Coefficients.Length <= 1) return new Polynomial([0]);
 
@@ -44,7 +44,7 @@ public partial struct Polynomial
     /// For example, if the polynomial was 3 + 2X + X^2, it becomes 2 + X after the shift.
     /// </summary>
     /// <returns>A new <see cref="Polynomial"/> instance with coefficients shifted by one degree lower.</returns>
-    public readonly Polynomial ShiftCoefficientsBy1()
+    public Polynomial ShiftCoefficientsBy1()
     {
         if (Coefficients.Length <= 1)
         {
@@ -66,7 +66,7 @@ public partial struct Polynomial
     /// Generates a square-free version of the polynomial by removing any repeated roots.
     /// </summary>
     /// <returns>A new Polynomial instance that is square-free.</returns>
-    public readonly Polynomial MakeSquareFree()
+    public Polynomial MakeSquareFree()
     {
         var derivative = this.PolynomialDerivative();
         var gcd = PolynomialGCD(this, derivative);

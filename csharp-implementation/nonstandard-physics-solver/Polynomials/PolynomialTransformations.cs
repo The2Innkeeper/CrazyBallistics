@@ -6,19 +6,19 @@ public partial struct Polynomial
     /// Transforms the polynomial according to the specified transformation: (x+1)^n * P(s / (x+1)).
     /// </summary>
     /// <returns>The new polynomial (x+1)^n*P(s/(1+x))</returns>
-    public readonly Polynomial TransformedForLowerInteval(float scale)
+    public Polynomial TransformedForLowerInteval(float scale)
     {
         float[] transformedCoefficients = new float[Coefficients.Length];
         Array.Copy(Coefficients, transformedCoefficients, Coefficients.Length);
 
-        // Step 1: Apply x := x+1
-        TaylorShift(ref transformedCoefficients, 1);
+        // Step 1: Apply x := sx
+        Scale(ref transformedCoefficients, scale);
 
         // Step 2: Apply P(x) := x^degree(P)*P(1/x)
         Reverse(ref transformedCoefficients);
 
-        // Step 3: Apply x := sx
-        Scale(ref transformedCoefficients, scale);
+        // Step 3: Apply x := x+1
+        TaylorShift(ref transformedCoefficients, 1);
 
         return new Polynomial(transformedCoefficients);
 
@@ -90,7 +90,7 @@ public partial struct Polynomial
     /// </summary>
     /// <param name="shift">The value to shift by, x := x + shift.</param>
     /// <returns>The shifted polynomial coefficients.</returns>
-    public readonly Polynomial TaylorShift(float shift)
+    public Polynomial TaylorShift(float shift)
     {
         float[] newCoefficients = new float[Coefficients.Length];
         for (int i = 0; i < Coefficients.Length; i++)
@@ -146,7 +146,7 @@ public partial struct Polynomial
     /// Applies the transformation p(x) := x^degree(p) * p(1/x), equivalent to flipping the coefficient list.
     /// </summary>
     /// <returns>A new Polynomial instance with coefficients in reversed order.</returns>
-    public readonly Polynomial Reversed()
+    public Polynomial Reversed()
     {
         float[] reversedCoefficients = new float[Coefficients.Length];
         Array.Copy(Coefficients, reversedCoefficients, Coefficients.Length);
@@ -160,10 +160,10 @@ public partial struct Polynomial
     /// </summary>
     /// <param name="scaleFactor">The factor s by which you scale the input</param>
     /// <returns>A new Polynomial instasnce with scaled coefficients</returns>
-    public readonly Polynomial Scale(float scaleFactor)
+    public Polynomial ScaleInput(float scaleFactor)
     {
         float[] scaledCoefficients = new float[Coefficients.Length];
-        for (int i = 1; i < scaledCoefficients.Length; i++)
+        for (int i = 0; i < scaledCoefficients.Length; i++)
         {
             scaledCoefficients[i] = MathF.Pow(scaleFactor, i) * Coefficients[i];
         }

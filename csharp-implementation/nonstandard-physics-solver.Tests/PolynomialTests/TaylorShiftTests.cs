@@ -10,6 +10,7 @@ public class TaylorShiftTests
     [InlineData(new float[] { 1 }, 0, new float[] { 1 })] // Test shifting by 0
     [InlineData(new float[] { 1, 2, 1 }, 1, new float[] { 4, 4, 1 })] // (x^2 + 2x + 1) shifted by +1 = x^2 + 4x + 4
     [InlineData(new float[] { 0, 1 }, -1, new float[] { -1, 1 })] // x shifted by -1
+    [InlineData(new float[] { 2, 3, 5, 11 }, 7, new float[] { 4041, 1690, 236, 11 })]
     public void TaylorShiftQuadratic_ShiftsCorrectly(float[] coefficients, float shift, float[] expected)
     {
         // Arrange

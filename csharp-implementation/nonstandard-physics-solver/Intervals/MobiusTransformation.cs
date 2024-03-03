@@ -1,8 +1,8 @@
 ﻿namespace NonstandardPhysicsSolver.Intervals;
 
-public readonly struct MobiusTransformation
+public struct MobiusTransformation
 {
-    public readonly float NumeratorCoefficient, NumeratorConstant, DenominatorCoefficient, DenominatorConstant;
+    public float NumeratorCoefficient, NumeratorConstant, DenominatorCoefficient, DenominatorConstant;
 
     /// <summary>
     /// Applies the transformation Mobius(x) := (ax+b)/(cx+d).
@@ -15,10 +15,10 @@ public readonly struct MobiusTransformation
 
     public MobiusTransformation(float numeratorCoefficient, float numeratorConstant, float denominatorCoefficient, float denominatorConstant)
     {
-        if (numeratorCoefficient * denominatorConstant == numeratorConstant * denominatorCoefficient)
-        {
-            throw new ArgumentException("Invalid Möbius transformation parameters: ad should not equal bc.");
-        }
+        //if (numeratorCoefficient * denominatorConstant == numeratorConstant * denominatorCoefficient)
+        //{
+        //    throw new ArgumentException("Invalid Möbius transformation parameters: ad should not equal bc.");
+        //}
 
         NumeratorCoefficient = numeratorCoefficient;
         NumeratorConstant = numeratorConstant;
@@ -39,9 +39,22 @@ public readonly struct MobiusTransformation
     }
 
     /// <summary>
+    /// M(x):=x=(1x+0)/(0x+1)
+    /// </summary>
+    /// <returns>The identity Mobius transformation M(x) := x</returns>
+    public static MobiusTransformation Identity()
+    {
+        return new MobiusTransformation(
+            1f,
+            0f,
+            0f,
+            1f);
+    }
+
+    /// <summary>
     /// Apply the transformation x := 1 /(x + 1)
     /// </summary>
-    public readonly MobiusTransformation ProcessUnitInterval()
+    public MobiusTransformation ProcessUnitInterval()
     {
         return new MobiusTransformation(
             NumeratorConstant,
@@ -56,7 +69,7 @@ public readonly struct MobiusTransformation
     /// </summary>
     /// <param name="shift">The shift amount used for the transformation.</param>
     /// <returns>A new MobiusTransformation adjusted for the lower interval.</returns>
-    public readonly MobiusTransformation TransformedForLowerInterval(float shift)
+    public MobiusTransformation TransformedForLowerInterval(float shift)
     {
         float newA = NumeratorConstant; // a becomes b
         float newB = NumeratorConstant + shift * NumeratorCoefficient; // b becomes as + b
@@ -66,7 +79,7 @@ public readonly struct MobiusTransformation
         return new MobiusTransformation(newA, newB, newC, newD);
     }
 
-    public readonly float EvaluateAt(float x)
+    public float EvaluateAt(float x)
     {
         float denominator = DenominatorCoefficient * x + DenominatorConstant;
         if (MathF.Abs(denominator) < float.Epsilon)
@@ -80,8 +93,9 @@ public readonly struct MobiusTransformation
         return (NumeratorCoefficient * x + NumeratorConstant) / denominator;
     }
 
-    public readonly Interval PositiveDomainImage()
+    public Interval PositiveDomainImage()
     {
+        if (DenominatorCoefficient == 0 && DenominatorConstant == 0) return new Interval(0f, float.PositiveInfinity);
         float bound1, bound2;
         bound1 = NumeratorCoefficient / DenominatorCoefficient;
         bound2 = NumeratorConstant / DenominatorConstant;
@@ -89,7 +103,7 @@ public readonly struct MobiusTransformation
         return new Interval(MathF.Min(bound1, bound2), MathF.Max(bound1, bound2));
     }
 
-    public readonly MobiusTransformation TaylorShift(float shift)
+    public MobiusTransformation TaylorShift(float shift)
     {
         // (a(x+s)+b)/(c(x+s)+d) = (ax + b+as) / (cx + d+cs)
         return new MobiusTransformation(
@@ -114,7 +128,7 @@ public readonly struct MobiusTransformation
             DenominatorCoefficient);
     }
 
-    public readonly MobiusTransformation Scale(float factor)
+    public MobiusTransformation ScaleInput(float factor)
     {
         return new MobiusTransformation(
             NumeratorCoefficient * factor,
