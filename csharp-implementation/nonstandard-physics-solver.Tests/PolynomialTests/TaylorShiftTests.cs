@@ -16,7 +16,7 @@ public class TaylorShiftTests
         var polynomial = new Polynomial(coefficients);
 
         // Act
-        var result = polynomial.TaylorShiftQuadratic(shift);
+        var result = polynomial.TaylorShift(shift);
 
         // Assert
         Assert.Equal(expected, result.Coefficients);
@@ -31,7 +31,7 @@ public class TaylorShiftTests
         var expected = new float[] { 729, 243, 27, 1 }; // Expected might need adjustment based on actual shift impact
         var polynomial = new Polynomial(coefficients);
 
-        var result = polynomial.TaylorShiftQuadratic(shift);
+        var result = polynomial.TaylorShift(shift);
 
         // This assertion might need adjustment based on the precision of the floating-point operations
         AssertExtensions.ArraysEqual(expected, result.Coefficients);

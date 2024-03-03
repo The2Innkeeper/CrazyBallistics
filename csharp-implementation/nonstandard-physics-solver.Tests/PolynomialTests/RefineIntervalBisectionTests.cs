@@ -1,8 +1,8 @@
 ﻿namespace NonstandardPhysicsSolver.Polynomials.Tests;
 
+using NonstandardPhysicsSolver.Intervals;
 using NonstandardPhysicsSolver.Polynomials.Tests.TestUtils;
 using System;
-
 
 public class PolynomialBisectionTests
 {
@@ -19,7 +19,7 @@ public class PolynomialBisectionTests
         float tolerance = 0.0001f;
 
         // Act
-        float? foundRoot = polynomial.RefineIntervalBisection(leftBound, rightBound, tolerance);
+        float? foundRoot = Interval.RefineIntervalBisection(polynomial.EvaluatePolynomialAccurate, leftBound, rightBound, tolerance);
 
         // Assert
         Assert.NotNull(foundRoot);
@@ -35,7 +35,7 @@ public class PolynomialBisectionTests
         var polynomial = new Polynomial(coeffs);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => polynomial.RefineIntervalBisection(-0.5f, 1));
+        Assert.Throws<ArgumentException>(() => Interval.RefineIntervalBisection(polynomial.EvaluatePolynomialAccurate, -0.5f, 1));
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class PolynomialBisectionTests
         int maxIterations = 3; // Low number to force termination before convergence
 
         // Act
-        float? result = polynomial.RefineIntervalBisection(-0.5f, 2, 1e-5f, maxIterations);
+        float? result = Interval.RefineIntervalBisection(polynomial.EvaluatePolynomialAccurate, -0.5f, 2, 1e-5f, maxIterations);
 
         // Assert
         Assert.Null(result); // Expect null due to max iterations without converging

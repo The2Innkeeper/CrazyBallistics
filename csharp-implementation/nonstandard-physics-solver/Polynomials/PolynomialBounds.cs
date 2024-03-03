@@ -10,49 +10,46 @@ public partial struct Polynomial
     /// <exception cref="ArgumentException">Thrown when the coefficients list is null or empty.</exception>
     public readonly float LMQPositiveUpperBound()
     {
+        int coefficientCount = Coefficients.Length;
         // Validate input
-        if (Coefficients == null || Coefficients.Length == 0)
+        if (Coefficients == null || coefficientCount == 0)
         {
             throw new ArgumentException("The coefficients list cannot be null or empty.");
         }
         if (!Coefficients.Any(coeff => coeff <= 0)) // If all coefficients are strictly positive, there will be no positive roots
         {
-            return 0f;
+            return float.NaN;
         }
 
-        double upperBound = double.MinValue;
+        int degree = coefficientCount - 1;
+        int[] usageCounts = Enumerable.Repeat(1, coefficientCount).ToArray();
+        double upperBound = double.NegativeInfinity;
 
-        // Find all negative coefficients and their indices, from high to low degree
-        for (int neg_i = Coefficients.Length - 1; neg_i >= 0; neg_i--)
+        for (int neg_i = degree - 1; neg_i >= 0; neg_i--)
+        // Note: neg_i = i
         {
-            if (!(Coefficients[neg_i] < 0)) continue;
+            if (!(Coefficients[neg_i] < 0)) { continue; }
 
-            double minRadical = double.MaxValue;
-            int power = 1; // Reset t_j for each negative coefficient
+            double minRadical = double.PositiveInfinity;
 
-            // Loop over all preceding positive coefficients, from high to low degree
-            for (int pos_i = Coefficients.Length - 1; pos_i > neg_i; pos_i--)
+            for (int pos_i = neg_i + 1; pos_i <= degree; pos_i++)
+            // Note: pos_i = j
             {
-                if (!(Coefficients[pos_i] > 0)) continue;
+                if (!(Coefficients[pos_i] > 0)) { continue; }
 
-                // Compute radical
-                double radical = Math.Pow(-Math.Pow(2, power) * Coefficients[neg_i] / Coefficients[pos_i], 1.0 / (pos_i - neg_i)); // $\sqrt[j-i]{\frac{-2^{t_j} a_i}{a_j}}$
-                minRadical = Math.Min(minRadical, radical);  // Update minimum
+                double radical = Math.Pow(-Math.Pow(2, usageCounts[pos_i]) * Coefficients[neg_i] / Coefficients[pos_i], 1.0 / (pos_i - neg_i));
+                minRadical = Math.Min(minRadical, radical);
 
-                // Increment t_j for each usage
-                power++;
+                usageCounts[pos_i]++;
             }
 
-            upperBound = Math.Max(upperBound, minRadical);
+            if (minRadical != double.PositiveInfinity)
+            {
+                upperBound = Math.Max(upperBound, minRadical);
+            }
         }
 
-        if (upperBound == double.MinValue)
-        {
-            // This means there were no negative coefficients, hence no bound could be calculated
-            return 0f;
-        }
-
-        return (float)upperBound;
+        return upperBound < 0 ? float.NaN : (float)upperBound;
     }
 
     /// <summary>
@@ -61,29 +58,70 @@ public partial struct Polynomial
     /// </summary>
     /// <returns>The LMQ lower bound as a float, representing a lower bound on the polynomial's positive roots.</returns>
     /// <exception cref="ArgumentException">Thrown when the coefficients list is null or empty.</exception>
-    /// <remarks>The reason why process in reverse order is because we apply LMQ to the transformed polynomial x^n*P(1/x).
+    /// <remarks>Note that our implementation of the polynomial coefficients are in increasing order of degree. 
+    /// To find the LMQ lower bound, we process the transformed polynomial x^n*P(1/x), and calculate the reciprocal of its upper bound, 1 / ubLMQ.
     /// Given P(x) = a_0 + a_1x + ... + a_nx^n, we obtain x^nP(1/x) = a_n + a_{n-1}x + ... + a_0x^n
-    /// which is equivalent to reversing the order of coefficients.</remarks>
+    /// which is equivalent to reversing the order of coefficients [a_0, ..., a_n] into [a_n, ..., a_0]
+    /// But this means that we can simply process the algorithm with negative coefficients in incremental order,(a_0 to a_n), skipping a_0,
+    /// then take the reciprocal at the end.
+    /// Notice that when working that way, degree(neg_i) = n - neg_i and degree(pos_i) = n - pos_i
+    /// And note: neg_i > pos_i
+    /// </remarks>
     public readonly float LMQPositiveLowerBound()
     {
+        int coefficientCount = Coefficients.Length;
         // Validate input
-        if (Coefficients == null || Coefficients.Length == 0)
+        if (Coefficients == null || coefficientCount == 0)
         {
             throw new ArgumentException("The coefficients list cannot be null or empty.");
         }
 
-        // Reverse the coefficients for the transformation P(x) -> x^n*P(1/x)
-        // Reuse the logic from LMQUpperBound to calculate the upper bound of the transformed polynomial
-        float upperBoundOfTransformed = this.Reversed().LMQPositiveUpperBound();
-
-        // The lower bound of the original polynomial is the inverse of the upper bound of the transformed polynomial
-        if (MathF.Abs(upperBoundOfTransformed) < float.Epsilon)
+        if (!Coefficients.Any(coeff => coeff <= 0)) // If all coefficients are strictly positive, there will be no positive roots
         {
-            // If the upper bound is 0, it implies all coefficients were positive, and thus, there's no positive lower bound
-            return float.MaxValue;
+            return float.NaN;
         }
 
-        // Return the upper bound for the transformed polynomial as the lower bound for the original polynomial
-        return upperBoundOfTransformed;
+        int degree = coefficientCount - 1;
+        int[] usageCounts = Enumerable.Repeat(1, coefficientCount).ToArray();
+        double maxMinRadical = double.NegativeInfinity;
+
+        // Go in incremental order: from a_0 to a_n, skipping a_0
+        // Negative coefficients
+        for (int neg_i = 1; neg_i <= degree; neg_i++)
+        {
+            if (!(Coefficients[neg_i] < 0)) { continue; }
+
+            double minRadical = double.PositiveInfinity;
+
+            // Positive coefficients
+            for (int pos_i = neg_i - 1; pos_i >= 0; pos_i--) // Process every higher degree positive coefficient, so pos_i < neg_i
+            {
+                if (!(Coefficients[pos_i] > 0)) { continue; }
+                // Compute (-2^t_j * a_i / a_j)^(1 / (j - i))
+                /* Note that in our case, our indexes are reversed because we increment as we go from high to low degree
+                 * That is,
+                 * neg_i = ^i = coefficientCount - i
+                 * pos_i = ^j = coefficientCount - j
+                 * compared to the original algorithm.
+                 * Hence: j - i = (coefficientCount - pos_i) - (coefficientCount - neg_i) = neg_i - pos_i
+                 * So the exponent becomes 1.0 / (neg_i - pos_i)
+                 * The rest is unchanged, since the indexes do not affect the coefficients themselves, only the order
+                 * Honestly it's just the difference in degree
+                */
+                double radical = Math.Pow(-Math.Pow(2, usageCounts[pos_i]) * Coefficients[neg_i] / Coefficients[pos_i], 1.0 / (neg_i - pos_i));
+                minRadical = Math.Min(minRadical, radical);
+
+                usageCounts[pos_i]++; // Consistent as long as you use the same positions for the same terms, if you want to match degree you should use complementary index
+            }
+
+            if (minRadical != double.PositiveInfinity)
+            {
+                maxMinRadical = Math.Max(maxMinRadical, minRadical);
+            }
+        }
+
+        // Return the reciprocal of upper bound for the transformed polynomial as the lower bound for the original polynomial
+        float lowerBound = (float)(1.0 / maxMinRadical);
+        return lowerBound < 0 ? float.NaN : lowerBound;
     }
 }

@@ -1,6 +1,21 @@
 ﻿namespace NonstandardPhysicsSolver.Polynomials.Tests.TestUtils;
+
+using NonstandardPhysicsSolver.Intervals;
+
 public static class ApproximateComparers
 {
+    public static void IntervalsEqual(Interval expected, Interval actual, float tolerance = 1e-5f)
+    {
+        const int N_ELEMENTS = 2;
+        for (int i = 0; i < N_ELEMENTS; i++)
+        {
+            if (Math.Abs(expected[i] - actual[i]) > tolerance)
+            {
+                throw new ArgumentException($"Lists differ at index {i}. Expected: {expected[i]}, Actual: {actual[i]}, Tolerance: {tolerance}");
+            }
+        }
+    }
+
     public static void ListsEqual(List<float> expected, List<float> actual)
     {
         if (expected == null || actual == null)

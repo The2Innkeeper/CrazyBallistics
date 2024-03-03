@@ -4,6 +4,7 @@ Relevant links:
 
 https://en.wikipedia.org/wiki/Vincent%27s_theorem
 https://www.sciencedirect.com/science/article/pii/S0304397508006476
+https://en.wikipedia.org/wiki/Real-root_isolation#Continued_fraction_method
 
 Here's a plain language description:
 
@@ -21,12 +22,14 @@ From [(Sharma, 2008)](https://www.sciencedirect.com/science/article/pii/S0304397
 
 Given these two components, the continued fraction algorithm for isolating the real roots of a square-free input polynomial $A_{in}(X)$ uses a recursive procedure $CF(A, M)$ that takes as input a polynomial $A(X)$ and a Möbius transformation $$M(X) = \frac{pX+q}{rX+s}$$, where $p,q,r,s \in \mathbb{N}$ and $ps − rq \neq 0$. The interval $I_M$ associated with the transformation $M(X)$ has endpoints $p/r$ and $q/s$. The relation among $A_{in}(X)$, $A(X)$ and $M(X)$ is the following:
 $$A(X) = (rX + s)^n \cdot A_{in}(M(X)) \tag{3}$$
-Given this relation, the procedure $CF(A, M)$ returns a list of isolating intervals for the roots of $A_{in}(X)$ in $I_M$ . To isolate all the positive roots of $A_{in}(X)$, initiate CF(A, M) with A(X) = $A_{in}(X)$ and M(X) = X; to isolate the negative roots of $A_{in}(X)$, initiate CF(A, M) on $A_{in}(X) \coloneqq A_{in}(−X)$ and $M(X) \coloneqq X$, and swap the endpoints of the intervals returned while simultaneously changing their sign.
-The procedure CF(A, M) is as follows:
+Given this relation, the procedure $CF(A, M)$ returns a list of isolating intervals for the roots of $A_{in}(X)$ in $I_M$ . To isolate all the positive roots of $A_{in}(X)$, initiate $CF(A, M)$ with $A(X) \coloneqq A_{in}(X)$ and $M(X) \coloneqq X$; to isolate the negative roots of $A_{in}(X)$, initiate $CF(A, M)$ on $A_{in}(X) \coloneqq A_{in}(−X)$ and $M(X) \coloneqq X$, and swap the endpoints of the intervals returned while simultaneously changing their sign.
+The procedure $CF(A, M)$ is as follows:
 "
 
 $$
 \begin{aligned}
+& \textbf{Finding all positive real roots of an input polynomial }A_{in}(X) \\
+& \textbf{Initiate } A(X):=A_{in}(X), M(X):=X \\
 & \textbf{Procedure} \, \text{CF}(A, M) \\
 & \quad \textbf{Input}: \text{A square-free polynomial } A(X) \text{ in } \mathbb{R}[X] \text{ and a Möbius transformation } M(X) \text{ satisfying (3)} \\
 & \quad \textbf{Output}: \text{A list of isolating intervals for the roots of } A_{\text{in}}(X) \text{ in } I_M \\
@@ -54,14 +57,87 @@ $$
 \end{aligned}
 $$
 
+```python
+def CF_iterative(A, M):
+    stack = [(A, M)]
+    while stack:
+        A, M = stack.pop()
+        if A(0) == 0:
+            print("Output Interval (M(0),M(0))")
+            continue
+        V = Var(A, X)
+        if V == 0:
+            continue
+        if V == 1:
+            print("Output Interval (M(0),M(∞))")
+            continue
+        b = PLB(A)  # PLB ≡ PositiveLowerBound
+        if b > 1:
+            A = A(b + X)
+            M = M(b + X)
+        A₁:=A(x+1), M₁:=M(x+1)
+        stack.append((A₁, M₁))  # Looking for real roots in (1,+∞)
+        A₂ = A(1/(x+1)), M₂ = M(1/(x+1))
+        stack.append((A₂, M₂))  # Looking for real roots in (0,1)
+```
 
 I believe a Mobius transformation should be implementable using a series of Taylor shifts $x\coloneqq x+b$, inversions $x \coloneqq 1/x$ and scalings $x \coloneqq ax$. Let's test this theory.
 
 I think a good way to proceed is to try to break down the expression by performing long division, so let's try:
 $$\frac{ax+b}{cx+d} = \frac{a}{c} + \frac{b - \frac{ad}{c}}{cx+d}$$
-It seems promising. We can first apply the scaling by $c$ and Taylor shift by $d$ to obtain $x\coloneqq cx+d$, then invert to get $x\coloneqq \frac{1}{cx+d}$. Afterwards we simply scale by $b-\frac{ad}{c}$ and shift by $\frac{a}{c}$ to obtain $x\coloneqq \frac{b - \frac{ad}{c}}{cx+d}=\frac{ax+b}{cx+d}$. I will see if I should hard-code the composed transformations or break them down into compositions of these simple transformations.
+It seems promising. We can first apply the scaling by $c$ and Taylor shift by $d$ to obtain $x\coloneqq cx+d$, then invert to get $x\coloneqq \frac{1}{cx+d}$. Afterwards we simply scale by $b-\frac{ad}{c}$ and shift by $\frac{a}{c}$ to obtain $x\coloneqq \frac{b - \frac{ad}{c}}{cx+d}=\frac{ax+b}{cx+d}$. I will see if I should hard-code the composed transformations or break them down into compositions of these simple transformations. The accumulated errors from repeated operations is likely to be problematic for small numbers.
 
 In order to hard-code the transformation $x\coloneqq \frac 1{x+1}$, let's see what we can do: $$M\left(\frac1{x+1}\right)=\frac{a\frac{1}{x+1}+b}{c\frac{1}{x+1}+d}=\frac{a+b(x+1)}{c+d(x+1)}=\frac{(b)x+(a+b)}{(d)x+(c+d)}$$
 In other words: $a\coloneqq b,b\coloneqq a+b,c\coloneqq d,d\coloneqq c+d$.
 
 When expanding out the Taylor shifted polynomials to find the coefficients, a naive implementation has a time complexity of $O(degree(p)^2)$. Luckily, there are better methods than this, such as the [convolution method (section F)](https://dl.acm.org/doi/10.1145/258726.258745). For our case it is probably overkill but a fun project to implement, surely.
+
+As of newer developments, it seems like [Wikipedia](https://en.wikipedia.org/wiki/Real-root_isolation#Continued_fraction_method) has a non-recursive implementation of the algorithm. I will try it as the recursive version is not working after many attempts.
+
+$$
+\begin{aligned}
+& \textbf{function: continued fraction} \\
+& \quad \textbf{input:} \, P(x), \text{ a square-free polynomial,} \\
+& \quad \textbf{output:} \, \text{a list of pairs of rational numbers defining isolating intervals} \\
+& \text{ /* Initialization */} \\
+& \quad L := [(P(x), x), (P(–x), –x)] \quad \text{/* two starting intervals */} \\
+& \quad Isol := [ ] \\
+& \text{ /* Computation */} \\
+& \quad \textbf{while} \, L \neq [ ] \, \textbf{do} \\
+& \quad \quad \text{Choose} \, (A(x), M(x)) \, \text{in} \, L, \text{ and remove it from} \, L \\
+& \quad \quad v := \text{var}(A) \\
+& \quad \quad \textbf{if} \, v = 0 \, \textbf{then exit} \quad \text{/* no root in the interval */} \\
+& \quad \quad \textbf{if} \, v = 1 \, \textbf{then} \quad \text{/* isolating interval found */} \\
+& \quad \quad \quad \text{add} \, (M(0), M(\infty)) \, \text{to} \, Isol \\
+& \quad \quad \quad \textbf{exit} \\
+& \quad \quad b := \text{some positive integer} \\
+& \quad \quad B(x) = A(x + b) \\
+& \quad \quad w := v – \text{var}(B) \\
+& \quad \quad \textbf{if} \, B(0) = 0 \, \textbf{then} \quad \text{/* rational root found */} \\
+& \quad \quad \quad \text{add} \, (M(b), M(b)) \, \text{to} \, Isol \\
+& \quad \quad \quad B(x) := B(x)/x \\
+& \quad \quad \text{add} \, (B(x),  M(b + x)) \, \text{to} \, L \quad \text{/* roots in (M(b), M(+∞)) */} \\
+& \quad \quad \textbf{if} \, w = 0 \, \textbf{then exit} \quad \text{/* Budan's theorem */} \\
+& \quad \quad \textbf{if} \, w = 1 \, \textbf{then} \quad \text{/* Budan's theorem again */} \\
+& \quad \quad \quad \text{add} \, (M(0), M(b)) \, \text{to} \, Isol \\
+& \quad \quad \textbf{if} \, w > 1 \, \textbf{then} \\
+& \quad \quad \quad \text{add} \, ( A(b/(1 + x)),  M(b/(1 + x)) ) \, \text{to} \, L \quad \text{/* roots in (M(0), M(b)) */}
+\end{aligned}
+$$
+
+As you can see we need a transformation of the kind $M(s/(1+x))$. Let's see how it affects the numbers:
+$$M\left(\frac s{1+x}\right) = \frac{a(\frac{s}{1+x})+b}{c(\frac{s}{1+x})+d}=\frac{as+b(1+x)}{cs+d(1+x)}=\frac{(b)x+(as+b)}{(d)x+(cs+d)}$$
+Therefore $$a:=b \\ b:=b+as \\ c:=d \\ d:=d+cs$$
+
+Now for the polynomial $(x+1)^n P(\frac{s}{x+1})$... it is probably too complicated to do in 1 step, so we will use the composition of transformations discussed earlier. We will break it down into
+
+$$
+\begin{aligned}
+& \textbf{Transformation } P(x):=(x+1)^n P\left(\frac{s}{x+1}\right) \\
+& \quad \text{1. } x:=x+1\\
+& \quad \text{2. } P(x):=x^nP\left(\frac{1}{x}\right) \\
+& \quad \text{3. } x:=sx
+\end{aligned}
+$$
+
+All in all we get the same transformation.

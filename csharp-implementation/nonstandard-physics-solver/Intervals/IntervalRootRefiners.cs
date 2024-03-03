@@ -1,26 +1,27 @@
-﻿namespace NonstandardPhysicsSolver.Polynomials;
+﻿namespace NonstandardPhysicsSolver.Intervals;
 
-public partial struct Polynomial
+public partial struct Interval
 {
     /// <summary>
     /// (Recommended) Finds a root of the polynomial within the specified interval using an iterative refinement process.
     /// The method combines interpolation, truncation, and projection (ITP) steps to converge towards a single root,
     /// offering superlinear convergence on average and linear convergence in the worst case.
     /// </summary>
+    /// <param name="function">The function whose root interval we are trying to refine.</param>
     /// <param name="leftBound">The left boundary of the interval</param>
     /// <param name="rightBound">The right boundary of the interval</param>
-    /// <param name="tol">The tolerance for convergence. The method aims to find a root within an interval of size less than or equal to 2 * tol. Default is 0.0005f.</param>
+    /// <param name="tolerance">The tolerance for convergence. The method aims to find a root within an interval of size less than or equal to 2 * tol. Default is 0.0005f.</param>
     /// <param name="truncationFactor">A coefficient factor used in the calculation of the truncation step. Default if unchanged is 0.2f / (rightBound - leftBound).</param>
     /// <param name="truncationExponent">An exponent used in the calculation of the truncation step, affecting the interpolation robustness. Default is 2f.</param>
     /// <param name="initialOffset">The initial offset for the maximum number of iterations, contributing to the calculation of the dynamic range for the interpolation step. Default is 1.</param>
-    /// <param name="maxIterations">The maximum number of iterations to perform. This prevents the method from running indefinitely. Default is 50.</param>
     /// <returns>The approximate position of the root within the specified interval, determined to be within the specified tolerance.</returns>
     /// <remarks>
     /// This method employs an iterative technique that refines the interval containing the root by evaluating the polynomial's sign changes.
     /// It dynamically adjusts the interval based on the polynomial's behavior, using interpolation, truncation, and projection steps
     /// to efficiently converge towards the root. The method is designed to work with polynomials where a single root exists within the given interval.
     /// </remarks>
-    public readonly float RefineIntervalITP(
+    public static float RefineIntervalITP(
+        Func<float, float> function,
         float leftBound,
         float rightBound,
         float tolerance = 1e-5f,
@@ -34,8 +35,8 @@ public partial struct Polynomial
         if (tolerance <= 0) throw new ArgumentException("Tolerance must be positive.");
 
         // Preprocessing
-        float leftBoundValue = EvaluatePolynomialAccurate(leftBound);
-        float rightBoundValue = EvaluatePolynomialAccurate(rightBound);
+        float leftBoundValue = function(leftBound);
+        float rightBoundValue = function(rightBound);
         // Edge cases
         if (leftBoundValue == 0) return leftBound;
         if (rightBoundValue == 0) return rightBound;
@@ -69,7 +70,7 @@ public partial struct Polynomial
             float xITP = Project(xTruncated, xMidpoint, projectionRadius, perturbationSign);
 
             // Update bounds
-            float xITPValue = EvaluatePolynomialAccurate(xITP);
+            float xITPValue = function(xITP);
             UpdateBounds(xITP, xITPValue, ref leftBound, ref rightBound, ref leftBoundValue, ref rightBoundValue);
 
             // Return xITP if converged
@@ -137,16 +138,17 @@ public partial struct Polynomial
     /// <summary>
     /// Finds a root of the polynomial within the specified interval using the bisection method.
     /// </summary>
+    /// <param name="function">The functions whose roots we are trying to refine.</param>
     /// <param name="leftBound">The left boundary of the interval to search for a root.</param>
     /// <param name="rightBound">The right boundary of the interval to search for a root.</param>
     /// <param name="tolerance">The tolerance for convergence. The method aims to find a root such that the size of the final interval is less than or equal to this value. Default is 0.0001f.</param>
     /// <param name="maxIterations">The maximum number of iterations to perform. This prevents the method from running indefinitely. Default is 100.</param>
     /// <returns>The approximate position of the root within the specified interval, determined to be within the specified tolerance, or null if the root cannot be found within the given number of iterations.</returns>
     /// <exception cref="ArgumentException">Thrown if the initial interval does not contain a root.</exception>
-    public readonly float? RefineIntervalBisection(float leftBound, float rightBound, float tolerance = 0.0001f, int maxIterations = 100)
+    public static float? RefineIntervalBisection(Func<float, float> function, float leftBound, float rightBound, float tolerance = 0.0001f, int maxIterations = 100)
     {
-        float fLeft = EvaluatePolynomialAccurate(leftBound);
-        float fRight = EvaluatePolynomialAccurate(rightBound);
+        float fLeft = function(leftBound);
+        float fRight = function(rightBound);
 
         if (fLeft == 0) return leftBound;
         if (fRight == 0) return rightBound;
@@ -160,7 +162,7 @@ public partial struct Polynomial
         for (int iteration = 0; iteration < maxIterations; iteration++)
         {
             float midpoint = (leftBound + rightBound) / 2f;
-            float fMid = EvaluatePolynomialAccurate(midpoint);
+            float fMid = function(midpoint);
 
             if (fMid == 0 || (rightBound - leftBound) / 2f < tolerance)
             {

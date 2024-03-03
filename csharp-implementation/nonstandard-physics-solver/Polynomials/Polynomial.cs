@@ -12,7 +12,46 @@ public partial struct Polynomial
     {
         if (coefficients == null || coefficients.Length == 0)
             throw new ArgumentException("Coefficients list cannot be null or empty.", nameof(coefficients));
+
+        for (int i = 0; i < coefficients.Length; i++) // Use for loop to have an index
+        {
+            float coefficient = coefficients[i];
+            if (float.IsNaN(coefficient))
+            {
+                throw new ArgumentException($"NaN detected in coefficient at index {i}." +
+                    $"\nPolynomial coefficients: {string.Join(", ", coefficients)}");
+            }
+        }
+
         Coefficients = coefficients;
+    }
+
+    public static Polynomial FromDoubleArray(double[] doubleCoefficients)
+    {
+        if (doubleCoefficients == null || doubleCoefficients.Length == 0)
+        {
+            throw new ArgumentException("Coefficients list cannot be null or empty.", nameof(doubleCoefficients));
+        }
+
+        // Initialize the float array with the same length as the input double array
+        float[] floatCoefficients = new float[doubleCoefficients.Length];
+
+        // Convert each double coefficient to float
+        for (int i = 0; i < doubleCoefficients.Length; i++)
+        {
+            double coefficient = doubleCoefficients[i];
+            if (double.IsNaN(coefficient))
+            {
+                throw new ArgumentException($"NaN detected in coefficient at index {i}." +
+                    $"\nPolynomial coefficients: {string.Join(", ", doubleCoefficients)}");
+            }
+
+            // Explicitly cast the double to float and store it
+            floatCoefficients[i] = (float)coefficient;
+        }
+
+        // Assign the converted float array to the Coefficients property
+        return new Polynomial(floatCoefficients);
     }
 
     /// <summary>
