@@ -2,10 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>Polynomial.Tests</RootNamespace>
+    <RootNamespace>NonstandardPhysicsSolver.Polynomials.Tests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -24,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\nonstandard-physics-solver\nonstandard-physics-solver.csproj" />
+    <ProjectReference Include="..\nonstandard-physics-solver\NonstandardPhysicsSolver.csproj" />
   </ItemGroup>
 
 </Project>

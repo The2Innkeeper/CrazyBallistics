@@ -27,39 +27,45 @@ For an effective upper bound, we will take the Local-Max-Quadratic (LMQ) bound, 
 To implement the LMQ bound, we need to do the following steps:
 
 - Given a polynomial $p(x) = a_n x^n + a_{n-1} x^{n-1} + ... + a_0$, find all the negative coefficients and their indices, i.e., $a_i < 0$ for some $i < n$.
-- For each negative coefficient $a_i$, loop over all the preceding positive coefficients $a_j$, where $j > i$, and compute $\sqrt[j-i]{\frac{-2^{t_j} a_i}{a_j}}$, where $t_j$ is initially set to 1 and is incremented each time $a_j$ is used in a pair. Then, take the minimum over all $j$.
+- For each negative coefficient $a_i$, loop over all the preceding (higher degree coefficients) positive coefficients $a_j$, where $j > i$, and compute $\sqrt[j-i]{\frac{-2^{t_j} a_i}{a_j}}$, where $t_j$ is initially set to 1 and is incremented each time the positive coefficient $a_j$ is used. Then, take the minimum over all $j$.
 - Finally, take the maximum of all the minimum radicals obtained in the previous step. This is the LMQ bound.
 
 Here is a possible pseudocode implementation of the LMQ bound:
 
 ```python
-# Input: "coeffs": list of coefficients of a polynomial p(x) in decreasing order of degree
-# Output: an upper bound on the values of the positive roots of p(x)[^1^][1][^2^][2]
-def LMQ_bound(coeffs):
-  # Initialize the bound to a big number
-  upper_bound = float('inf')
-  # Iterate through all elements in array of coefficients
-  for neg_i in range(len(coeffs)):
-    # Initialize an integer to store the powers of 2 for each positive coefficient
-    power = 1 
-    # Check if ai < 0
-    if not coeffs[neg_i] < 0:
-      continue
-    # Iterate through all preceding positive coefficients
-    for pos_i in range(neg_i+1, len(coeffs)):
-      # Check if aj > 0
-      if not coeffs[pos_i] > 0:
-        continue
-      # Calculate the (j-i)-th root of (-2^t_j*a_i/a_j)
-      value = (-2**power * coeffs[neg_i] / coeffs[pos_i]) ** (1 / (pos_i - neg_i))
-      # Update the minimum value for this pair
-      minValue = min(value, coeffs[pos_i])
-      # Update the maximum value for all pairs
-      upper_bound = max(upper_bound, minValue)
-      # Increment the power of 2 for this positive coefficient
-      power += 1
-  # Return the upper bound
-  return upper_bound
+def calculate_LMQ_bound(coefficients):
+    """
+    Calculate the Local-Max-Quadratic (LMQ) bound for the given polynomial coefficients.
+    
+    :param coefficients: A list of polynomial coefficients [a_n, a_{n-1}, ..., a_0]
+    :return: The LMQ bound.
+    """
+    n = len(coefficients) - 1  # Degree of the polynomial
+    usage_counts = [1] * (n + 1)  # Track usage of positive coefficients
+    min_radicals = []  # Store minimum radicals for each negative coefficient
+    
+    # Iterate over coefficients to find negative ones and calculate min radicals
+    for i, a_i in enumerate(coefficients):
+        if a_i < 0:
+            min_radical = float('inf')  # Set to infinity initially
+            
+            # Loop over preceding positive coefficients
+            for j in range(i + 1, n + 1):
+                a_j = coefficients[j]
+                if a_j > 0:
+                    # Calculate the radical for the pair (a_i, a_j)
+                    radical = (-2 ** usage_counts[j] * a_i / a_j) ** (1 / (j - i))
+                    min_radical = min(min_radical, radical)
+                    
+                    # Increment the usage count for a_j
+                    usage_counts[j] += 1
+            
+            # Only add to the list if a valid minimum was found
+            if min_radical != float('inf'):
+                min_radicals.append(min_radical)
+    
+    # Return the maximum of all minimum radicals if any exist, else return 0
+    return max(min_radicals) if min_radicals else float('nan')
 ```
 
 ## Square-free polynomials
