@@ -12,7 +12,7 @@ public class MakeSquareFreeTests
         var polynomial = new Polynomial(originalCoefficients);
 
         // Act
-        var squareFreePolynomial = polynomial.MakeSquareFree();
+        var squareFreePolynomial = polynomial.MakeSquarefree();
         var actualCoefficients = PolynomialUtils.NormalizedCoefficients(squareFreePolynomial);
 
         // Assert

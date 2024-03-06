@@ -11,12 +11,25 @@ public partial struct Polynomial
     public float LMQPositiveUpperBound()
     {
         int coefficientCount = Coefficients.Length;
+        float[] coefficients = new float[coefficientCount];
+        if (Coefficients.Last() < 0)
+        {
+            for (int i = 0; i < coefficientCount; i++)
+            {
+                coefficients[i] = -Coefficients[i];
+            }
+        }
+        else
+        {
+            coefficients = Coefficients;
+        }
+
         // Validate input
-        if (Coefficients == null || coefficientCount == 0)
+        if (coefficients == null || coefficientCount == 0)
         {
             throw new ArgumentException("The coefficients list cannot be null or empty.");
         }
-        if (!Coefficients.Any(coeff => coeff <= 0)) // If all coefficients are strictly positive, there will be no positive roots
+        if (!coefficients.Any(coeff => coeff <= 0)) // If all coefficients are strictly positive, there will be no positive roots
         {
             return float.NaN;
         }
@@ -27,17 +40,19 @@ public partial struct Polynomial
 
         for (int neg_i = degree - 1; neg_i >= 0; neg_i--)
         // Note: neg_i = i
+        // max {a_i < 0}
         {
-            if (!(Coefficients[neg_i] < 0)) { continue; }
+            if (!(coefficients[neg_i] < 0)) { continue; }
 
             double minRadical = double.PositiveInfinity;
 
             for (int pos_i = neg_i + 1; pos_i <= degree; pos_i++)
             // Note: pos_i = j
+            // min {a_j > 0; j > i}
             {
-                if (!(Coefficients[pos_i] > 0)) { continue; }
+                if (!(coefficients[pos_i] > 0)) { continue; }
 
-                double radical = Math.Pow(-Math.Pow(2, usageCounts[pos_i]) * Coefficients[neg_i] / Coefficients[pos_i], 1.0 / (pos_i - neg_i));
+                double radical = Math.Pow(-Math.Pow(2, usageCounts[pos_i]) * coefficients[neg_i] / coefficients[pos_i], 1.0 / (pos_i - neg_i));
                 minRadical = Math.Min(minRadical, radical);
 
                 usageCounts[pos_i]++;
@@ -69,14 +84,27 @@ public partial struct Polynomial
     /// </remarks>
     public float LMQPositiveLowerBound()
     {
+
         int coefficientCount = Coefficients.Length;
+        float[] coefficients = new float[coefficientCount];
+        if (Coefficients.First() < 0)
+        {
+            for (int i = 0; i < coefficientCount; i++)
+            {
+                coefficients[i] = -Coefficients[i];
+            }
+        }
+        else
+        {
+            coefficients = Coefficients;
+        }
         // Validate input
-        if (Coefficients == null || coefficientCount == 0)
+        if (coefficients == null || coefficientCount == 0)
         {
             throw new ArgumentException("The coefficients list cannot be null or empty.");
         }
 
-        if (!Coefficients.Any(coeff => coeff <= 0)) // If all coefficients are strictly positive, there will be no positive roots
+        if (!coefficients.Any(coeff => coeff <= 0)) // If all coefficients are strictly positive, there will be no positive roots
         {
             return float.NaN;
         }
@@ -89,14 +117,14 @@ public partial struct Polynomial
         // Negative coefficients
         for (int neg_i = 1; neg_i <= degree; neg_i++)
         {
-            if (!(Coefficients[neg_i] < 0)) { continue; }
+            if (!(coefficients[neg_i] < 0)) { continue; }
 
             double minRadical = double.PositiveInfinity;
 
             // Positive coefficients
             for (int pos_i = neg_i - 1; pos_i >= 0; pos_i--) // Process every higher degree positive coefficient, so pos_i < neg_i
             {
-                if (!(Coefficients[pos_i] > 0)) { continue; }
+                if (!(coefficients[pos_i] > 0)) { continue; }
                 // Compute (-2^t_j * a_i / a_j)^(1 / (j - i))
                 /* Note that in our case, our indexes are reversed because we increment as we go from high to low degree
                  * That is,
@@ -108,7 +136,7 @@ public partial struct Polynomial
                  * The rest is unchanged, since the indexes do not affect the coefficients themselves, only the order
                  * Honestly it's just the difference in degree
                 */
-                double radical = Math.Pow(-Math.Pow(2, usageCounts[pos_i]) * Coefficients[neg_i] / Coefficients[pos_i], 1.0 / (neg_i - pos_i));
+                double radical = Math.Pow(-Math.Pow(2, usageCounts[pos_i]) * coefficients[neg_i] / coefficients[pos_i], 1.0 / (neg_i - pos_i));
                 minRadical = Math.Min(minRadical, radical);
 
                 usageCounts[pos_i]++; // Consistent as long as you use the same positions for the same terms, if you want to match degree you should use complementary index

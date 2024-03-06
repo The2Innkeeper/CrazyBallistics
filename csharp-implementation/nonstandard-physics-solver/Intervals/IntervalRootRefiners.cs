@@ -2,14 +2,26 @@
 
 public partial struct Interval
 {
+    public static float RefineRootIntervalITP(
+        Func<float, float> function,
+        Interval interval,
+        float tolerance = 1e-5f,
+        float truncationFactor = float.NaN,
+        float truncationExponent = 2f,
+        int initialOffset = 0
+        )
+    {
+        return RefineRootIntervalITP(function, interval.LeftBound, interval.RightBound, tolerance, truncationFactor, truncationExponent, initialOffset);
+    }
+
     /// <summary>
     /// (Recommended) Finds a root of the polynomial within the specified interval using an iterative refinement process.
     /// The method combines interpolation, truncation, and projection (ITP) steps to converge towards a single root,
     /// offering superlinear convergence on average and linear convergence in the worst case.
     /// </summary>
     /// <param name="function">The function whose root interval we are trying to refine.</param>
-    /// <param name="leftBound">The left boundary of the interval</param>
-    /// <param name="rightBound">The right boundary of the interval</param>
+    /// <param name="leftBound">The EXCLUDED left boundary of the interval</param>
+    /// <param name="rightBound">The INCLUDED right boundary of the interval</param>
     /// <param name="tolerance">The tolerance for convergence. The method aims to find a root within an interval of size less than or equal to 2 * tol. Default is 0.0005f.</param>
     /// <param name="truncationFactor">A coefficient factor used in the calculation of the truncation step. Default if unchanged is 0.2f / (rightBound - leftBound).</param>
     /// <param name="truncationExponent">An exponent used in the calculation of the truncation step, affecting the interpolation robustness. Default is 2f.</param>
@@ -20,14 +32,14 @@ public partial struct Interval
     /// It dynamically adjusts the interval based on the polynomial's behavior, using interpolation, truncation, and projection steps
     /// to efficiently converge towards the root. The method is designed to work with polynomials where a single root exists within the given interval.
     /// </remarks>
-    public static float RefineIntervalITP(
+    public static float RefineRootIntervalITP(
         Func<float, float> function,
         float leftBound,
         float rightBound,
         float tolerance = 1e-5f,
         float truncationFactor = float.NaN,
         float truncationExponent = 2f,
-        int initialOffset = 1
+        int initialOffset = 0
         )
     {
         // Validate input
@@ -36,12 +48,16 @@ public partial struct Interval
 
         // Preprocessing
         float leftBoundValue = function(leftBound);
+        if (leftBoundValue == 0)
+        {
+            leftBound += tolerance;
+            leftBoundValue = function(leftBound);
+        }
         float rightBoundValue = function(rightBound);
         // Edge cases
-        if (leftBoundValue == 0) return leftBound;
         if (rightBoundValue == 0) return rightBound;
         bool doesNotCrossZero = MathF.Sign(leftBoundValue) == MathF.Sign(rightBoundValue);
-        if (doesNotCrossZero) throw new ArgumentException("The initial interval does not contain a single root.");
+        if (doesNotCrossZero) throw new ArgumentException($"The initial interval ]{leftBound},{rightBound}] does not contain a single root.");
 
         // Set k1 = 0.2/(b-a) if not specified
         if (float.IsNaN(truncationFactor))
@@ -49,11 +65,11 @@ public partial struct Interval
             truncationFactor = 0.2f / (rightBound - leftBound); // Value determined experimentally
         }
 
-        int nMaxBisections = (int)Math.Ceiling(Math.Log((rightBound - leftBound) / (2 * tolerance), 2));
+        int nMaxBisections = (int)Math.Ceiling(Math.Log((rightBound - leftBound) / (2f * tolerance), 2));
         int nMaxIterations = nMaxBisections + initialOffset;
 
         // Main logic: iterate until convergence within tolerance
-        for (int iteration = 0; rightBound - leftBound > 2 * tolerance; iteration++)
+        for (int iteration = 0; rightBound - leftBound > 2f * tolerance; iteration++)
         {
             // Calculating Parameters
             var (xMidpoint, projectionRadius, truncationRange) = CalculateParameters(leftBound, rightBound, tolerance, truncationFactor, truncationExponent, nMaxIterations, iteration);
@@ -135,6 +151,11 @@ public partial struct Interval
         return float.NaN;
     }
 
+
+    public static float RefineRootIntervalBisection(Func<float, float> function, Interval interval, float tolerance = 1e-5f, int maxIterations = 100)
+    {
+        return RefineRootIntervalBisection(function, interval.LeftBound, interval.RightBound, tolerance, maxIterations);
+    }
     /// <summary>
     /// Finds a root of the polynomial within the specified interval using the bisection method.
     /// </summary>
@@ -145,12 +166,16 @@ public partial struct Interval
     /// <param name="maxIterations">The maximum number of iterations to perform. This prevents the method from running indefinitely. Default is 100.</param>
     /// <returns>The approximate position of the root within the specified interval, determined to be within the specified tolerance, or null if the root cannot be found within the given number of iterations.</returns>
     /// <exception cref="ArgumentException">Thrown if the initial interval does not contain a root.</exception>
-    public static float? RefineIntervalBisection(Func<float, float> function, float leftBound, float rightBound, float tolerance = 0.0001f, int maxIterations = 100)
+    public static float RefineRootIntervalBisection(Func<float, float> function, float leftBound, float rightBound, float tolerance = 1e-5f, int maxIterations = 100)
     {
         float fLeft = function(leftBound);
         float fRight = function(rightBound);
 
-        if (fLeft == 0) return leftBound;
+        if (fLeft == 0)
+        {
+            leftBound += tolerance;
+            fLeft = function(leftBound);
+        }
         if (fRight == 0) return rightBound;
 
         // Check if the initial interval is valid
@@ -183,6 +208,6 @@ public partial struct Interval
         }
 
         // If the maximum number of iterations is reached without converging
-        return null;
+        return float.NaN;
     }
 }

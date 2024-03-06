@@ -58,5 +58,7 @@ However, we only want to minimize a single initial condition in order to have a 
  $$
 
 In fact, this problem can be generalized to any single unknown position derivative to be minimized in magnitude, simply solving for the unknown within the equation 
- $$\iff 0=x_{target}(T)-(x_{shooter}(T)+\Delta x_{sp}(T))$$
+ $$0=x_{target}(T)-(x_{shooter}(T)+\Delta x_{sp}(T))$$
  where $\Delta x_{sp}(T) \coloneqq \frac{t^k}{k!}x^{(k)}(T)$ for some $k$-th position derivative.
+
+ Also, because the spatial dimensions are not specified, this also works for any number of dimensions, $1D$, $2D$, $3D$, $4D$, $\infty D$!

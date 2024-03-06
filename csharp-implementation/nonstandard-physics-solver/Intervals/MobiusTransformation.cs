@@ -97,10 +97,41 @@ public struct MobiusTransformation
     {
         if (DenominatorCoefficient == 0 && DenominatorConstant == 0) return new Interval(0f, float.PositiveInfinity);
         float bound1, bound2;
-        bound1 = NumeratorCoefficient / DenominatorCoefficient;
-        bound2 = NumeratorConstant / DenominatorConstant;
+        bound1 = NumeratorConstant / DenominatorConstant;
+        bound2 = NumeratorCoefficient / DenominatorCoefficient;
 
         return new Interval(MathF.Min(bound1, bound2), MathF.Max(bound1, bound2));
+    }
+
+    /// <summary>
+    /// Maps the unit interval back to its original form through the Mobius transformation.
+    /// a = Min(M(0),M(1))
+    /// b = Max(M(0),M(1))
+    /// </summary>
+    /// <returns>The interval with bounds M(0) and M(1), in left to right (increasing) order.</returns>
+    public Interval UnitIntervalImage()
+    {
+        if (DenominatorCoefficient == 0 && DenominatorConstant == 0) return new Interval(0f, float.PositiveInfinity);
+
+        float bound1, bound2;
+        // M(0) = b/d
+        bound1 = NumeratorConstant / DenominatorConstant;
+        // M(1) = (a+b)/(c+d)
+        bound2 = (NumeratorCoefficient + NumeratorConstant) / (DenominatorCoefficient + DenominatorConstant);
+
+        return new Interval(MathF.Min(bound1, bound2), MathF.Max(bound1, bound2));
+    }
+
+    public MobiusTransformation TaylorShiftBy1()
+    {
+        // (a(x+s)+b)/(c(x+s)+d) = (ax + b+as) / (cx + d+cs)
+        // Since s = 1 then
+        // = (ax + a+b) / (cx + c+d)
+        return new MobiusTransformation(
+            NumeratorCoefficient,
+            NumeratorConstant + NumeratorCoefficient,
+            DenominatorCoefficient,
+            DenominatorConstant + DenominatorCoefficient);
     }
 
     public MobiusTransformation TaylorShift(float shift)
