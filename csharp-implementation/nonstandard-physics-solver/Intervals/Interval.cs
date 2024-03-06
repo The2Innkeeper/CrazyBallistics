@@ -2,10 +2,14 @@
 
 using NonstandardPhysicsSolver.Polynomials;
 
+/// <summary>
+/// Open-closed interval ]a,b] due to Budan's theorem's statements
+/// </summary>
 public partial struct Interval
 {
     public float LeftBound { get; }
     public float RightBound { get; }
+    public float Length { get; }
 
     public Interval(float leftBound, float rightBound)
     {
@@ -24,6 +28,7 @@ public partial struct Interval
             this.LeftBound = leftBound;
             this.RightBound = rightBound;
         }
+        this.Length = this.RightBound - this.LeftBound;
     }
 
     // Indexer to access bounds like an array
@@ -48,7 +53,7 @@ public partial struct Interval
     /// </summary>
     /// <param name="polynomial">The polynomial to check against.</param>
     /// <returns>True if the interval contains at least one root, otherwise false.</returns>
-    public bool ContainsRoot(Polynomial polynomial)
+    public bool ContainsSingleRoot(Polynomial polynomial)
     {
         // Checking sign change as a necessary condition for a root in the interval
         float valueAtLeft = polynomial.EvaluatePolynomialAccurate(LeftBound);

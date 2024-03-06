@@ -87,7 +87,27 @@ I think a good way to proceed is to try to break down the expression by performi
 $$\frac{ax+b}{cx+d} = \frac{a}{c} + \frac{b - \frac{ad}{c}}{cx+d}$$
 It seems promising. We can first apply the scaling by $c$ and Taylor shift by $d$ to obtain $x\coloneqq cx+d$, then invert to get $x\coloneqq \frac{1}{cx+d}$. Afterwards we simply scale by $b-\frac{ad}{c}$ and shift by $\frac{a}{c}$ to obtain $x\coloneqq \frac{b - \frac{ad}{c}}{cx+d}=\frac{ax+b}{cx+d}$. I will see if I should hard-code the composed transformations or break them down into compositions of these simple transformations. The accumulated errors from repeated operations is likely to be problematic for small numbers.
 
-In order to hard-code the transformation $x\coloneqq \frac 1{x+1}$, let's see what we can do: $$M\left(\frac1{x+1}\right)=\frac{a\frac{1}{x+1}+b}{c\frac{1}{x+1}+d}=\frac{a+b(x+1)}{c+d(x+1)}=\frac{(b)x+(a+b)}{(d)x+(c+d)}$$
+An important transformation is $M(x)\coloneqq \frac{ax+b}{x+1}$, which maps the interval $]a,b[$ onto $]0,+\infty[$. As before, let's break it down into compositions of simple transformations, then trace our steps back (I might hard-code a transformation later in one step but for now I have suffered too many errors).
+$$
+M(x)\coloneqq \frac{ax+b}{x+1}=\frac{a}{1}+\frac{b-\frac{a\cdot1}{1}}{1x+1}=a+\frac{b-a}{x+1}
+$$Based on that, let's find the order of composition from last to first by following order of operations:
+$$
+\begin{aligned}
+&1. \space a+\frac{b-a}{x+1} && \mapsto a+\frac{b-a}{x} &&& (x+1=:x) \\
+&2. \space a+(b-a)\frac 1 x && \mapsto a+(b-a)x &&& (\frac 1 x=:x) \\
+&3. \space a+(b-a)x && \mapsto a+x &&& ((b-a)x=:x) \\
+&4. \space a+x && \mapsto x &&& (a+x=:x)
+\end{aligned}
+$$
+Therefore, the order of composition of simple transformations will be 
+$$\begin{aligned}
+&1.\space x\coloneqq x+a \\
+&2.\space x\coloneqq (b-a)x \\
+&3.\space x\coloneqq \frac 1 x \\
+&4.\space x\coloneqq x+1 \\
+\end{aligned}$$
+
+Then, in order to hard-code the transformation $x\coloneqq \frac 1{x+1}$, let's see what we can do: $$M\left(\frac1{x+1}\right)=\frac{a\frac{1}{x+1}+b}{c\frac{1}{x+1}+d}=\frac{a+b(x+1)}{c+d(x+1)}=\frac{(b)x+(a+b)}{(d)x+(c+d)}$$
 In other words: $a\coloneqq b,b\coloneqq a+b,c\coloneqq d,d\coloneqq c+d$.
 
 When expanding out the Taylor shifted polynomials to find the coefficients, a naive implementation has a time complexity of $O(degree(p)^2)$. Luckily, there are better methods than this, such as the [convolution method (section F)](https://dl.acm.org/doi/10.1145/258726.258745). For our case it is probably overkill but a fun project to implement, surely.
@@ -132,9 +152,9 @@ Therefore $$a:=b \\ b:=b+as \\ c:=d \\ d:=d+cs$$
 Now for the polynomial $(x+1)^n P(\frac{s}{x+1})$... it is probably too complicated to do in 1 step, so we will use the composition of transformations discussed earlier. We will break it down into a composition by making substitution and backtracking our steps.
 $$
 \begin{aligned}
-&1. \space \frac s {x+1} && \mapsto \frac s x && (x+1:=x) \\
-&2. \space \frac s x && \mapsto sx && (\frac 1 x=:x) \\
-&3. \space && sx \mapsto x && (sx=:x)
+&1. \space \frac s {x+1} && \mapsto \frac s x &&& (x+1=:x) \\
+&2. \space \frac s x && \mapsto sx &&& (\frac 1 x=:x) \\
+&3. \space sx && \mapsto x &&& (sx=:x)
 \end{aligned}
 $$
 

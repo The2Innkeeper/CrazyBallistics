@@ -48,9 +48,9 @@ namespace NonstandardPhysicsSolver.Polynomials.Tests.TestUtils
         }
 
 
-        public static void ListsApproximatelyEqual(List<float> expected, List<float> actual)
+        public static void ListsApproximatelyEqual(List<float> expected, List<float> actual, float tolerance = 1e-5f)
         {
-            AssertWithMessage(() => ApproximateComparers.ListsApproximatelyEqual(expected, actual));
+            AssertWithMessage(() => ApproximateComparers.ListsApproximatelyEqual(expected, actual, tolerance));
         }
 
         public static void ArraysEqual(float[] expected, float[] actual)

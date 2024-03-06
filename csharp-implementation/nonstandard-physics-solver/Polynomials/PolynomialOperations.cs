@@ -22,6 +22,20 @@ public partial struct Polynomial
     }
 
     /// <summary>
+    /// Calculates x * P'(x) = x * dP(x)/dx
+    /// </summary>
+    /// <returns>A new Polynomial instance representing x * dP(x)/dx.</returns>
+    public Polynomial DerivativeTimesX()
+    {
+        var weightedDerivativeCoeffs = new float[Coefficients.Length];
+        for (int i = 0; i < Coefficients.Length; i++)
+        {
+            weightedDerivativeCoeffs[i] = Coefficients[i] * i;
+        }
+        return new Polynomial(weightedDerivativeCoeffs);
+    }
+
+    /// <summary>
     /// Calculates the derivative of the polynomial.
     /// </summary>
     /// <returns>A new Polynomial instance representing the derivative of the original polynomial.</returns>
@@ -66,7 +80,7 @@ public partial struct Polynomial
     /// Generates a square-free version of the polynomial by removing any repeated roots.
     /// </summary>
     /// <returns>A new Polynomial instance that is square-free.</returns>
-    public Polynomial MakeSquareFree()
+    public Polynomial MakeSquarefree()
     {
         var derivative = this.PolynomialDerivative();
         var gcd = PolynomialGCD(this, derivative);
@@ -76,6 +90,14 @@ public partial struct Polynomial
         {
             return this;
         }
+
+        //if (MathF.Sign(this.Coefficients.Last()) != MathF.Sign(gcd.Coefficients.Last()))
+        //{
+        //    for (int i = 0; i < Coefficients.Length; i++)
+        //    {
+        //        gcd.Coefficients[i] *= -1;
+        //    }
+        //}
 
         var (squareFree, _) = PolynomialDivision(this, gcd);
         return squareFree;

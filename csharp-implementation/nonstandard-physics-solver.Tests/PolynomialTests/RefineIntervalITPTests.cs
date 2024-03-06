@@ -16,7 +16,7 @@ public class RefineIntervalITPTests
         Polynomial polynomial = new([3, -4, 1]);
         float tol = 0.0005f;
 
-        float actualRoot = Interval.RefineIntervalITP(polynomial.EvaluatePolynomialAccurate, leftBound, rightBound, tol);
+        float actualRoot = Interval.RefineRootIntervalITP(polynomial.EvaluatePolynomialAccurate, leftBound, rightBound, tol);
 
         // Assert that the actual root is within tolerance of the expected root
         AssertExtensions.FloatsApproximatelyEqual(expectedRoot, actualRoot, tol);

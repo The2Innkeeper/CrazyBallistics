@@ -29,8 +29,12 @@ However, we only want to minimize a single initial condition in order to have a 
  $$\iff 0=x_{target}(T)-(x_{shooter}(T)+\Delta x_{sp}(T))$$
  $$\iff 0=x_{target}(T)-x_{shooter}(T)-Tv$$
  Therefore, we get that
- $$v=\frac{x_{target}(T)-x_{shooter}(T)}{T} \tag{1}$$
- Notice that the magnitude $\lVert v \rVert$ is totally formulated in terms of a single unknown $T$; we know all the other information. So we just need to minimize this function $\lVert v(T) \rVert ^2$.
+ $$
+ \begin{equation}
+ v=\frac{x_{target}(T)-x_{shooter}(T)}{T} \tag{velocity}
+ \end{equation}
+ $$
+ Notice that the magnitude $\lVert v \rVert$ can be totally formulated in terms of a single unknown $T$; we know all the other information. So we just need to minimize this function $\lVert v(T) \rVert ^2$.
 
  To recap, we have reduced our problem into a minimization of a rational function. I have gone down the rabbit hole of this problem when trying to find some methods to tackle it such as [[1](https://mathweb.ucsd.edu/~njw/PUBLICPAPERS/sosgcd.pdf)] and [[2](https://www.researchgate.net/publication/226393980_Global_Optimization_of_Rational_Functions_A_Semidefinite_Programming_Approach)], but ultimately I think that it is simplest to use the traditional single-variable calculus approach.
 
@@ -42,4 +46,19 @@ However, we only want to minimize a single initial condition in order to have a 
  $$\implies \frac{x(T)}{T}\cdot \frac{x(T)-T \frac{dx}{dT}(T)}{T^2} = 0$$
  Since we said we ignored $T=0$ this is equivalent to
  $$x(T)\cdot \left( x(T)-T \frac{dx}{dT}(T)\right) = 0$$
- Expainding the dot product is not so useful and only results in more computation, so we will keep it in this form. Since the vector $x(T)$ is modeled by a polynomial in $T$, then believe it or not, this whole dot product is a polynomial in $T$! So we have reduced this problem once again into finding all the positive roots/zeroes of a polynomial, then testing them one-by-one into the function $\lVert v(T) \rVert^2$ in order to find the minimum (there exists the second derivative test to make sure that the derivative's root will result in a local minimum, which will reduce the number of candidates to choose from; however, for our purposes, the polynomials should be fairly low degree anyways since if there are very high order derivatives of position, the objects will quickly fly off to infinity. Based on this, I judged that it would not be too useful). For some approaches on finding roots of polynomials, details can be found in the `polynomials` folder.
+ Expainding the dot product is not so useful and only results in more computation, so we will keep it in this form. Since the vector $x(T)$ is modeled by a polynomial in $T$, then believe it or not, this whole dot product is a polynomial in $T$! So we have reduced this problem once again into finding all the positive roots/zeroes of a polynomial, then testing them one-by-one into the function $\lVert v(T) \rVert^2$ in order to find the minimum.
+
+ There exists the second derivative test to make sure that the derivative's root will result in a local minimum, which will reduce the number of candidates to choose from; however, for our purposes, the polynomials should be fairly low degree anyways since if there are very high order derivatives of position, the objects will quickly fly off to infinity. Based on this, I judged that it would not be too useful. For some approaches on finding roots of polynomials, details can be found in the `polynomials` folder.
+
+ Once we have determined the ideal value of $T$ to give the minimum velocity magnitude, then we can plug it back into the equation $(\text{velocity})$:
+ $$
+ \begin{equation}
+ v(T)=\frac{x_{target}(T)-x_{shooter}(T)}{T} \tag{velocity}
+ \end{equation}
+ $$
+
+In fact, this problem can be generalized to any single unknown position derivative to be minimized in magnitude, simply solving for the unknown within the equation 
+ $$0=x_{target}(T)-(x_{shooter}(T)+\Delta x_{sp}(T))$$
+ where $\Delta x_{sp}(T) \coloneqq \frac{t^k}{k!}x^{(k)}(T)$ for some $k$-th position derivative.
+
+ Also, because the spatial dimensions are not specified, this also works for any number of dimensions, $1D$, $2D$, $3D$, $4D$, $\infty D$!

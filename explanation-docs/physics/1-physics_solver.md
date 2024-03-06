@@ -24,9 +24,13 @@ Compared to the original polynomial $p(T)$, the coefficients of $T \frac{dp(T)}{
 We wish to find all the positive roots of the last polynomial derived in the `solution_approach` file and test them one-by-one into the function for the squared magnitude of $v(T)$ to find the minimum. The values to test are the values of $T$ that satisfy $$\text{Critical}(T):=x(T)\cdot \left( x(T)-T \frac{dx}{dT}(T)\right) = 0$$
 
 We can parhaps break the expression for some intuition and see if there is room for optimization. Also, reducing the intermediate computation steps like the dot product can help with reducing precision errors.
-$$\text{Critical}(T)=\left( \sum_{j=0}^n \left( \frac{T^j}{j!}\right) x^{(j)}(0) \right) \left( \sum_{i=0}^n \left( \frac{T^i}{i!} \right) x^{(i)}(0)-\sum_{i=0}^n \left( \frac{i\cdot T^i}{i!}\right) x^{(i)}(0) \right)$$
-$$=\left( \sum_{j=0}^n \left( \frac{T^j}{j!}\right) x^{(j)}(0) \right)\left( \sum_{i=0}^n \left( \frac{(1-i)T^i}{i!}\right) x^{(i)}(0) \right)$$
-At this point, the expression is a product of 2 sums which in general can only be expressed as a double sum, which only increases the number of computations, so it is not worth it. So we will keep the final expression in the actual implementation.
+$$\text{Critical}(T)=\left( \sum_{j=0}^n \left( \frac{T^j}{j!}\right) x^{(j)}(0) \right) \cdot \left( \sum_{i=0}^n \left( \frac{T^i}{i!} \right) x^{(i)}(0)-\sum_{i=0}^n \left( \frac{i\cdot T^i}{i!}\right) x^{(i)}(0) \right)$$
+$$=\left( \sum_{j=0}^n \left( \frac{T^j}{j!}\right) x^{(j)}(0) \right) \cdot \left( \sum_{i=0}^n \left( \frac{(1-i)T^i}{i!}\right) x^{(i)}(0) \right)$$
+At this point, the expression is a product of 2 sums which in general can only be expressed as a double sum. Expanding only increases the number of computations, so it is not worth it. So we will keep the unreduced expression in the actual implementation because we can cache $x(T)$:
+$$\text{Critical}(T):=x(T)\cdot \left( x(T)-T \frac{dx}{dT}(T)\right)$$
+where 
+$$x(T)\coloneqq \sum_{j=0}^n \left( \frac{T^j}{j!}\right) x^{(j)}(0)$$$$T\frac{dx}{dT}(T)=\sum_{i=0}^n \left( \frac{i\cdot T^i}{i!}\right) x^{(i)}(0)$$
+
 
 #### Pseudocode:
 ```pseudocode

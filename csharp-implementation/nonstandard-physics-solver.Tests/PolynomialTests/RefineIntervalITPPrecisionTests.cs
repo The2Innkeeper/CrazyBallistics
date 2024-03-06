@@ -17,7 +17,7 @@ public class PolynomialToleranceTests
         float leftBound = 0;
         float rightBound = 2; // Interval containing the root at x=1
 
-        float actualRoot = Interval.RefineIntervalITP(polynomial.EvaluatePolynomialAccurate, leftBound, rightBound, tol);
+        float actualRoot = Interval.RefineRootIntervalITP(polynomial.EvaluatePolynomialAccurate, leftBound, rightBound, tol);
 
         // Assert that the actual root is within tolerance of the expected root
         string failureMessage = $"Expected root close to {expectedRoot} with tolerance {tol}, but got {actualRoot}";
