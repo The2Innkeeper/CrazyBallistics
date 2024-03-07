@@ -65,11 +65,11 @@ public partial struct Interval
             truncationFactor = 0.2f / (rightBound - leftBound); // Value determined experimentally
         }
 
-        int nMaxBisections = (int)Math.Ceiling(Math.Log((rightBound - leftBound) / (2f * tolerance), 2));
+        int nMaxBisections = (int)MathF.Ceiling(MathF.Log((rightBound - leftBound) / (2f * tolerance), 2));
         int nMaxIterations = nMaxBisections + initialOffset;
 
         // Main logic: iterate until convergence within tolerance
-        for (int iteration = 0; rightBound - leftBound > 2f * tolerance; iteration++)
+        for (int iteration = 0; rightBound - leftBound >= 2f * tolerance; iteration++)
         {
             // Calculating Parameters
             var (xMidpoint, projectionRadius, truncationRange) = CalculateParameters(leftBound, rightBound, tolerance, truncationFactor, truncationExponent, nMaxIterations, iteration);
@@ -77,10 +77,10 @@ public partial struct Interval
             // Interpolation
             float xRegulaFalsi = InterpolateRegulaFalsi(leftBound, rightBound, leftBoundValue, rightBoundValue);
 
-            int perturbationSign = Math.Sign(xMidpoint - xRegulaFalsi); // Get direction for next steps
+            int perturbationSign = MathF.Sign(xMidpoint - xRegulaFalsi); // Get direction for next steps
 
             // Truncation
-            var xTruncated = Truncate(xMidpoint, projectionRadius, perturbationSign, truncationRange);
+            var xTruncated = Truncate(xMidpoint, xRegulaFalsi, perturbationSign, truncationRange);
 
             // Projection
             float xITP = Project(xTruncated, xMidpoint, projectionRadius, perturbationSign);
@@ -90,14 +90,14 @@ public partial struct Interval
             UpdateBounds(xITP, xITPValue, ref leftBound, ref rightBound, ref leftBoundValue, ref rightBoundValue);
 
             // Return xITP if converged
-            if ((rightBound - leftBound) / 2f < tolerance) return (rightBound + leftBound) / 2f;
+            if ((rightBound - leftBound) < 2f * tolerance) return (rightBound + leftBound) / 2f;
         }
 
         static (float xMidpoint, float projectionRadius, float truncationRange) CalculateParameters(float leftBound, float rightBound, float tolerance, float truncationFactor, float truncationExponent, int maxIterations, int iteration)
         {
             float xMidpoint = (leftBound + rightBound) / 2;
-            float projectionRadius = tolerance * (float)Math.Pow(2, maxIterations - iteration) - (rightBound - leftBound) / 2;
-            float truncationRange = truncationFactor * (float)Math.Pow(rightBound - leftBound, truncationExponent);
+            float projectionRadius = tolerance * MathF.Pow(2, maxIterations - iteration) - (rightBound - leftBound) / 2;
+            float truncationRange = truncationFactor * MathF.Pow(rightBound - leftBound, truncationExponent);
             return (xMidpoint, projectionRadius, truncationRange);
         }
 
@@ -108,12 +108,12 @@ public partial struct Interval
 
         static float Truncate(float xMidpoint, float xRegulaFalsi, int perturbationSign, float truncationRange)
         {
-            return Math.Abs(xMidpoint - xRegulaFalsi) >= truncationRange ? xRegulaFalsi + perturbationSign * truncationRange : xMidpoint;
+            return MathF.Abs(xMidpoint - xRegulaFalsi) >= truncationRange ? xRegulaFalsi + perturbationSign * truncationRange : xMidpoint;
         }
 
         static float Project(float xTruncated, float xMidpoint, float projectionRadius, int perturbationSign)
         {
-            return Math.Abs(xTruncated - xMidpoint) <= projectionRadius ? xTruncated : xMidpoint - perturbationSign * projectionRadius;
+            return MathF.Abs(xTruncated - xMidpoint) <= projectionRadius ? xTruncated : xMidpoint - perturbationSign * projectionRadius;
         }
 
         static void UpdateBounds(

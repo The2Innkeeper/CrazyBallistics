@@ -13,8 +13,8 @@ public partial struct Polynomial
 
         foreach (Interval interval in isolatedRootIntervals)
         {
-            float root = Interval.RefineRootIntervalBisection(squarefreePolynomial.EvaluatePolynomialAccurate, interval, precision);
-            //float root = Interval.RefineRootIntervalITP(squarefreePolynomial.EvaluatePolynomialAccurate, interval, precision);
+            //float root = Interval.RefineRootIntervalBisection(squarefreePolynomial.EvaluatePolynomialAccurate, interval, precision);
+            float root = Interval.RefineRootIntervalITP(squarefreePolynomial.EvaluatePolynomialAccurate, interval, precision);
             roots.Add(root);
         }
 

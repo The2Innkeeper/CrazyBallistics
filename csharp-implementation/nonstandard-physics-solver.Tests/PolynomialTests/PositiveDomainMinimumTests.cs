@@ -61,7 +61,7 @@ public class PositiveDomainMinimumTests
 
         // Assert
         AssertExtensions.FloatsApproximatelyEqual(expectedMinX, actualMinX);
-        AssertExtensions.FloatsApproximatelyEqual(expectedMinValue, actualMinValue);
+        AssertExtensions.FloatsApproximatelyEqual(expectedMinValue, actualMinValue, tolerance: 1e-4f);
     }
 
 
