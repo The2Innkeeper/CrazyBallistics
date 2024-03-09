@@ -5,6 +5,7 @@ using NonstandardPhysicsSolver.Polynomials.Tests.TestUtils;
 public class LMQUpperBoundCalculatorTests
 {
     [Theory]
+    [InlineData(new float[] { -0.077418f, 4.38858f, -26.752f, 43.6964f, -14.7546f, 1f }, 29.5092f)]
     [InlineData(new float[] { -1, -100, 100, 1 }, 2f)]
     [InlineData(new float[] { -6, 11, -6, 1 }, 12f)]
     // (x-1)(x-2)(x-3) = x^3 - 6x^2 + 11x - 6
