@@ -29,4 +29,4 @@ for x in critical_points:
         min_y = y
 ```
 
-Finally, this gives us the x value which will return the global minimum.
+Finally, this gives us the x value which will return the global minimum y.
