@@ -98,7 +98,7 @@ public partial struct PolynomialFloat
     }
 
     /// <summary>
-    /// Map ]0,1[ to ]0,+inf[ by P(x) := x^n * P(1/(x+1))
+    /// Map ]0,1[ to ]0,+inf[ by P(x) := (x+1)^n * P(1/(x+1))
     /// </summary>
     /// <returns>The new polynomial whose roots are mapped from ]0,1[ to ]0,+inf[</returns>
     public PolynomialFloat MapUnitIntervalToPositiveReals()
