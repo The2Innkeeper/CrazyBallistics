@@ -90,7 +90,8 @@ It seems promising. We can first apply the scaling by $c$ and Taylor shift by $d
 An important transformation is $M(x)\coloneqq \frac{ax+b}{x+1}$, which maps the interval $]a,b[$ onto $]0,+\infty[$. As before, let's break it down into compositions of simple transformations, then trace our steps back (I might hard-code a transformation later in one step but for now I have suffered too many errors).
 $$
 M(x)\coloneqq \frac{ax+b}{x+1}=\frac{a}{1}+\frac{b-\frac{a\cdot1}{1}}{1x+1}=a+\frac{b-a}{x+1}
-$$Based on that, let's find the order of composition from last to first by following order of operations:
+$$
+Based on that, let's find the order of composition from last to first by following order of operations:
 $$
 \begin{aligned}
 &1. \space a+\frac{b-a}{x+1} && \mapsto a+\frac{b-a}{x} &&& (x+1=:x) \\
