@@ -1,7 +1,7 @@
-﻿namespace NonstandardPhysicsSolver.Polynomials.Tests.PolynomialDoubleTests;
+﻿namespace NonstandardPhysicsSolver.Tests.PolynomialDoubleTests;
 
 using NonstandardPhysicsSolver.Intervals;
-using NonstandardPhysicsSolver.Polynomials.Tests.TestUtils;
+using NonstandardPhysicsSolver.Tests.TestUtils.TestUtilsDouble;
 using System;
 
 public class PolynomialBisectionTests

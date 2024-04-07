@@ -1,7 +1,7 @@
-﻿namespace NonstandardPhysicsSolver.Polynomials.Tests.PolynomialTests;
+﻿namespace NonstandardPhysicsSolver.Tests.PolynomialFloatTests;
 
 using NonstandardPhysicsSolver.Polynomials;
-using NonstandardPhysicsSolver.Polynomials.Tests.TestUtils;
+using NonstandardPhysicsSolver.Tests.TestUtils;
 using Xunit;
 
 public class TaylorShiftTests

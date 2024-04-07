@@ -12,15 +12,4 @@ public static class PolynomialUtils
         // Normalize coefficients and convert the result back to an array
         return coefficients.Select(c => c / scalingFactor).ToArray();
     }
-
-    public static double[] NormalizedCoefficients(PolynomialDouble polynomial)
-    {
-        // Clone the coefficients array properly and cast to double[] if necessary
-        var coefficients = polynomial.Coefficients.Clone() as double[];
-        if (coefficients == null || coefficients.Length == 0) return []; // Ensure there's at least one coefficient to avoid division by zero
-
-        double scalingFactor = coefficients[^1]; // Use the last coefficient as the scaling factor
-        // Normalize coefficients and convert the result back to an array
-        return coefficients.Select(c => c / scalingFactor).ToArray();
-    }
 }

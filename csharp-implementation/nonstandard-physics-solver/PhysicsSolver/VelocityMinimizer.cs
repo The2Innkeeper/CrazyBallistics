@@ -1,16 +1,19 @@
 ﻿namespace NonstandardPhysicsSolver.PhysicsSolver;
+
+using NonstandardPhysicsSolver.Polynomials;
+using NonstandardPhysicsSolver.Polynomials.LaurentPolynomial;
 using System;
 
 public static class VelocityMinimizer<T> where T : struct, IVector<T>
 {
     /* TODO:
      * CalculateRelativeVectors(T[] targetVectors, T[] shooterVectors)
-     * EvaluateVectorTaylorExpansion(T[] vectorCoefficients, float time)
-     * CalculateInitialVelocity(float timeToTarget)
+     * ExpandVelocityNumeratorPolynomial(T[] vectorCoefficients, float time)
+     * ExpandVelocityLaurentPolynomial(T[] vectorCoefficients, float time) OR
      * Func<float, float> VelocitySquareMagnitude(T[] relativeVectors, float timeToTarget) // To minimize
-     * Polynomial VelocityDerivativePolynomial(T[] relativeVectors, float timeToTarget) // Set to 0 (find all roots)
+     * Polynomial VelocityDerivativePolynomial(T[] relativeVectors) // Set to 0 (find all roots)
+     * CalculateInitialVelocity(float timeToTarget)
      * CalculateMinimizedInitialVelocity()
-     * 
      */
 
     /// <summary>
@@ -58,6 +61,177 @@ public static class VelocityMinimizer<T> where T : struct, IVector<T>
     }
 
     /// <summary>
+    /// Expands the velocity numerator polynomial by calculating the coefficients of the polynomial
+    /// that represents the square of the velocity's magnitude over time, with optimized factorial computation.
+    /// </summary>
+    /// <param name="scaledRelativeVectors">The array of scaled Taylor vector coefficients representing initial position, velocity, acceleration, etc.</param>
+    /// <returns>A list of floats representing the coefficients of the expanded polynomial.</returns>
+    public static PolynomialFloat ExpandVelocityNumeratorPolynomial(T[] scaledRelativeVectors)
+    {
+        int vectorCoefficientCount = scaledRelativeVectors.Length;
+        int expandedPolynomialCoefficientCount = 2 * vectorCoefficientCount - 1;
+        float[] expandedPolynomialCoefficients = new float[expandedPolynomialCoefficientCount];
+
+        // Initialize scaled coefficients array.
+        // T[] scaledVectorCoefficients = ScaleCoefficients(scaledVectorCoefficients);
+
+        // Compute the coefficients of the expanded polynomial using a static local function.
+        ComputeExpandedPolynomialCoefficients(scaledRelativeVectors, expandedPolynomialCoefficients);
+
+        return new PolynomialFloat(expandedPolynomialCoefficients);
+
+
+        // Static local function to compute the coefficients of the expanded polynomial.
+        static void ComputeExpandedPolynomialCoefficients(T[] scaledVectorCoefficients, float[] expandedCoefficients)
+        {
+            int initialPolynomialDegree = scaledVectorCoefficients.Length - 1;
+            for (int k = 0; k < expandedCoefficients.Length; k++)
+            {
+                float coefficientSum = 0f;
+
+                // Handle the middle term separately for even k to avoid doubling it.
+                if (k % 2 == 0) // k is even
+                {
+                    int middleIndex = k / 2;
+                    for (int j = 0;
+                        //int j = k < initialPolynomialDegree ? 0 : k - initialPolynomialDegree;
+                        j < middleIndex;
+                        j++) // Stop before the middle to leverage symmetry
+                    {
+                        if (j > initialPolynomialDegree || (k - j) > initialPolynomialDegree) continue;
+                        // Compute the sum of dot products for the symmetric terms.
+                        coefficientSum += scaledVectorCoefficients[j].Dot(scaledVectorCoefficients[k - j]);
+                    }
+
+                    // Double the sum of symmetric terms (not including the middle term for even k).
+                    coefficientSum *= 2;
+
+                    coefficientSum += scaledVectorCoefficients[middleIndex].Dot(scaledVectorCoefficients[middleIndex]); // c_{k/2} * c_{k/2}
+                }
+                else // k odd
+                {
+                    // Sum from 0 to (k-1)/2
+                    int middleIndex = (k - 1) / 2;
+                    for (int j = 0;
+                        // int j = k < initialPolynomialDegree ? 0 : k - initialPolynomialDegree;
+                        j <= middleIndex;
+                        j++)
+                    {
+                        if (j > initialPolynomialDegree || (k - j) > initialPolynomialDegree) continue;
+                        coefficientSum += scaledVectorCoefficients[j].Dot(scaledVectorCoefficients[k - j]);
+                    }
+
+                    // Double the sum of symmetric terms
+                    coefficientSum *= 2;
+                }
+
+                expandedCoefficients[k] = coefficientSum;
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// Function to compute the scaled vector coefficients of the Taylor polynomial in T, dividing by the index factorial.
+    /// </summary>
+    public static T[] ScaleTaylorVectorCoefficients(T[] coefficients)
+    {
+        T[] scaled = new T[coefficients.Length];
+        float currentFactorial = 1f; // Initialize at 1! = 1
+
+        // Copy the first two coefficients without scaling as their scale factor is 1.
+        if (coefficients.Length > 0) scaled[0] = coefficients[0];
+        if (coefficients.Length > 1) scaled[1] = coefficients[1];
+
+        for (int index = 2; index < coefficients.Length; index++)
+        {
+            currentFactorial *= index; // Calculate the current factorial.
+            scaled[index] = coefficients[index].Scale(1f / currentFactorial); // Scale the coefficient.
+        }
+
+        return scaled;
+    }
+
+    public static Func<float, float> VelocitySquareMagnitude(T[] relativeVectors) // To minimize
+    {
+        return CalculateVelocitySquareMagnitude;
+
+        float CalculateVelocitySquareMagnitude(float timeToTarget)
+        {
+            return ExpandVelocityNumeratorPolynomial(relativeVectors).EvaluatePolynomialHorner(timeToTarget) / MathF.Pow(timeToTarget, 2);
+        }
+    }
+
+    /// <summary>
+    /// Calculates the initial velocity vector based on the time to reach the target.
+    /// Uses Horner's method.
+    /// </summary>
+    /// <param name="timeToTarget">The .</param>
+    /// <returns>The result of the polynomial evaluation.</returns>
+    public static T CalculateInitialVelocity(T[] scaledRelativeVectors, float timeToTarget)
+    {
+        int degree = scaledRelativeVectors.Length - 1;
+        T hornerResult = scaledRelativeVectors[degree];
+        for (int coeff_i = degree - 1; coeff_i >= 0; coeff_i--)
+        {
+            hornerResult = hornerResult.Scale(timeToTarget).Add(scaledRelativeVectors[coeff_i]);
+        }
+
+        T initialVelocity = hornerResult.Scale(1f / timeToTarget);
+        return initialVelocity;
+    }
+
+    public static float TestPointsForMinimum(Func<float, float> functionToMinimize, List<float> inputValues)
+    {
+        float minimumInput = float.NaN;
+        float minimumOutput = float.PositiveInfinity;
+
+        for (int i = 0; i < inputValues.Count; i++)
+        {
+            float currentInput = inputValues[i];
+            float currentOutput = functionToMinimize(currentInput);
+
+            if (currentOutput < minimumOutput)
+            {
+                minimumInput = currentInput;
+                minimumOutput = currentOutput;
+            }
+        }
+
+        return minimumInput == float.PositiveInfinity ? float.NaN : minimumInput;
+    }
+
+    public static T CalculateMinimizedInitialVelocity(T[] targetVectors, T[] shooterVectors)
+    {
+        // Calculate relative movement vectors
+        T[] relativeVectors = CalculateRelativeVectors(targetVectors, shooterVectors);
+
+        // Find the numerator polynomial of the velocity function
+        PolynomialFloat velocityNumeratorPolynomial = ExpandVelocityNumeratorPolynomial(relativeVectors);
+        LaurentPolynomial velocityLaurentPolynomial = new LaurentPolynomial(velocityNumeratorPolynomial).MultiplyByXPower(-2);
+
+        // Find the numerator of the derivative of the velocity function
+        PolynomialFloat derivativeNumeratorPolynomial = velocityLaurentPolynomial.Derivative().ConvertToNumeratorPolynomial();
+
+        // Find all roots of the derivative polynomial
+        List<float> criticalTimes = derivativeNumeratorPolynomial.FindAllRoots();
+
+        // Test all these critical points into the velocity function to find the minimum critical time
+        Func<float, float> velocitySquareMagnitude = VelocitySquareMagnitude(relativeVectors);
+        float optimalTimeToTarget = TestPointsForMinimum(velocitySquareMagnitude, criticalTimes);
+
+        // Calculate the initial velocity based on the minimum critical time
+        T minimizedInitialVelocity = CalculateInitialVelocity(relativeVectors, optimalTimeToTarget);
+
+        // Return the minimum initial velocity
+        return minimizedInitialVelocity;
+    }
+
+
+
+    /* DEPRECATED
+
+    /// <summary>
     /// Evaluates a vector-valued Taylor polynomial at a specified scalar point using Horner's method.
     /// </summary>
     /// <param name="time">The scalar point at which to evaluate the polynomial.</param>
@@ -95,7 +269,7 @@ public static class VelocityMinimizer<T> where T : struct, IVector<T>
 
         return result;
     }
-
+    
     /// <summary>
     /// Calculate the initial velocity based on v(T) = (T(T) - S(T)) / T
     /// </summary>
@@ -188,4 +362,5 @@ public static class VelocityMinimizer<T> where T : struct, IVector<T>
             return x_T.Dot(x_T.Subtract(TdxdT_T));
         }
     }
+    */
 }

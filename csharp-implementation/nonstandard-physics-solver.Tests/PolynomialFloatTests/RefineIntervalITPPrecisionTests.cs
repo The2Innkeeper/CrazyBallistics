@@ -1,8 +1,7 @@
-﻿namespace NonstandardPhysicsSolver.Polynomials.Tests;
+﻿namespace NonstandardPhysicsSolver.Tests.PolynomialFloatTests;
 
 using NonstandardPhysicsSolver.Intervals;
-using TestUtils;
-using Xunit;
+using NonstandardPhysicsSolver.Tests.TestUtils;
 
 public class PolynomialToleranceTests
 {

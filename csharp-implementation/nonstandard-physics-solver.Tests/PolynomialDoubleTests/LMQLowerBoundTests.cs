@@ -1,7 +1,7 @@
-﻿namespace NonstandardPhysicsSolver.Polynomials.Tests.PolynomialDoubleTests;
+﻿namespace NonstandardPhysicsSolver.Tests.PolynomialDoubleTests;
 
 using NonstandardPhysicsSolver.Polynomials;
-using NonstandardPhysicsSolver.Polynomials.Tests.TestUtils;
+using NonstandardPhysicsSolver.Tests.TestUtils.TestUtilsDouble;
 
 public class LMQLowerBoundTests
 {

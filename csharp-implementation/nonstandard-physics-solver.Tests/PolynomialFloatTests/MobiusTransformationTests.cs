@@ -1,6 +1,6 @@
-﻿namespace NonstandardPhysicsSolver.Polynomials.Tests.PolynomialTests;
+﻿namespace NonstandardPhysicsSolver.Tests.PolynomialFloatTests;
 
-using NonstandardPhysicsSolver.Intervals;
+using NonstandardPhysicsSolver.Intervals.Float;
 using Xunit;
 
 public class MobiusTransformationTests

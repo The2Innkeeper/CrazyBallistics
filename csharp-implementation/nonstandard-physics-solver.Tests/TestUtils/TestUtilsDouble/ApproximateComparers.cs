@@ -1,4 +1,4 @@
-﻿namespace NonstandardPhysicsSolver.Polynomials.Tests.TestUtils;
+﻿namespace NonstandardPhysicsSolver.Tests.TestUtils.TestUtilsDouble;
 
 using NonstandardPhysicsSolver.Intervals;
 

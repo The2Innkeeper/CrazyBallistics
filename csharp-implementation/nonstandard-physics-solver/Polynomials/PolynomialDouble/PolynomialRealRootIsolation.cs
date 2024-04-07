@@ -1,6 +1,7 @@
 ﻿namespace NonstandardPhysicsSolver.Polynomials;
 
 using NonstandardPhysicsSolver.Intervals;
+using NonstandardPhysicsSolver.Intervals.Double;
 
 public partial struct PolynomialDouble
 {

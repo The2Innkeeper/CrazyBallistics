@@ -1,6 +1,6 @@
-﻿namespace NonstandardPhysicsSolver.Polynomials.Tests;
+﻿namespace NonstandardPhysicsSolver.Tests.PolynomialFloatTests;
 
-using NonstandardPhysicsSolver.Polynomials.Tests.TestUtils;
+using NonstandardPhysicsSolver.Tests.TestUtils;
 
 public class LMQUpperBoundCalculatorTests
 {

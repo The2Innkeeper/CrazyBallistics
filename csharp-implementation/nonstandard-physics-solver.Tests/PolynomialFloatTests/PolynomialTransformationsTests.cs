@@ -1,6 +1,6 @@
-﻿using NonstandardPhysicsSolver.Polynomials.Tests.TestUtils;
+﻿namespace NonstandardPhysicsSolver.Tests.PolynomialFloatTests;
 
-namespace NonstandardPhysicsSolver.Polynomials.Tests.PolynomialTests;
+using NonstandardPhysicsSolver.Tests.TestUtils;
 
 public class PolynomialTransformationsTests
 {
