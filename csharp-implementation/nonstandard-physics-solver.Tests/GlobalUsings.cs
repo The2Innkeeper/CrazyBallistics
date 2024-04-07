@@ -1,2 +1,2 @@
-global using Xunit;
 global using NonstandardPhysicsSolver.Polynomials;
+global using Xunit;

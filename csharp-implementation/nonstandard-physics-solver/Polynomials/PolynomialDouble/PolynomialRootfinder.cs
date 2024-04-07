@@ -8,8 +8,8 @@ public partial struct PolynomialDouble
     {
         List<double> roots = [];
         PolynomialDouble squarefreePolynomial = this.MakeSquarefree();
-        //List<IntervalDouble> isolatedRootIntervals = squarefreePolynomial.IsolatePositiveRootIntervalsBisection();
-        List<IntervalDouble> isolatedRootIntervals = squarefreePolynomial.IsolatePositiveRootIntervalsContinuedFractions();
+        List<IntervalDouble> isolatedRootIntervals = squarefreePolynomial.IsolatePositiveRootIntervalsBisection();
+        //List<IntervalDouble> isolatedRootIntervals = squarefreePolynomial.IsolatePositiveRootIntervalsContinuedFractions();
 
         foreach (IntervalDouble interval in isolatedRootIntervals)
         {

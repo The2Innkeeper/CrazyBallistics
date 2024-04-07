@@ -13,6 +13,8 @@ public partial struct PolynomialFloat
 
         foreach (Interval interval in isolatedRootIntervals)
         {
+            // For some reason, ITP method is broken
+            // But the time is similar anyways, probably because bisection needs less calculations
             float root = Interval.RefineRootIntervalBisection(squarefreePolynomial.EvaluatePolynomialAccurate, interval, precision);
             //float root = Interval.RefineRootIntervalITP(squarefreePolynomial.EvaluatePolynomialAccurate, interval, precision);
             roots.Add(root);

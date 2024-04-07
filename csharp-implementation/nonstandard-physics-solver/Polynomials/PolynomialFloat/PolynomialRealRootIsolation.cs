@@ -1,6 +1,7 @@
 ﻿namespace NonstandardPhysicsSolver.Polynomials;
 
 using NonstandardPhysicsSolver.Intervals;
+using NonstandardPhysicsSolver.Intervals.Float;
 
 public partial struct PolynomialFloat
 {
@@ -8,7 +9,7 @@ public partial struct PolynomialFloat
     /// Take a polynomial and find a list of intervals each containing a single real root using Bisection and Descartes' Rule of Signs.
     /// </summary>
     /// <returns>A list of (float leftBound, float rightBound) tuples as intervals each containing a single real root.</returns>
-    public List<Interval> IsolatePositiveRootIntervalsBisection()
+    public List<Interval> IsolatePositiveRootIntervalsBisection(int maxIterations = 50)
     {
         // Validate input
         CheckEmptyCoefficients(Coefficients);
@@ -26,8 +27,10 @@ public partial struct PolynomialFloat
 
         tasks.Enqueue((horizontallyShrunkenPolynomial, initialMobius, initialSignVariationCount));
 
-        while (tasks.Count > 0)
+        for (int iteration = 0; iteration < maxIterations && tasks.Count > 0; iteration++)
         {
+            if (iteration == maxIterations) return isolatingIntervals.Count == 0 ? new List<Interval>() : isolatingIntervals;
+
             var (currentPolynomial, currentMobius, currentSignVariationCount) = tasks.Dequeue();
 
             switch (currentSignVariationCount)
@@ -140,7 +143,7 @@ public partial struct PolynomialFloat
     /// Take a polynomial and find a list of intervals each containing a single root.
     /// </summary>
     /// <returns>A list of (float leftBound, float rightBound) tuples as intervals each containing a single root.</returns>
-    public List<Interval> IsolatePositiveRootIntervalsContinuedFractions()
+    public List<Interval> IsolatePositiveRootIntervalsContinuedFractions(int maxIterations = 50)
     {
         // Validate input
         CheckEmptyCoefficients(Coefficients);
@@ -159,8 +162,10 @@ public partial struct PolynomialFloat
         var isolatedRootIntervals = new List<Interval>();
 
 
-        while (tasks.Count > 0)
+        for (int iteration = 0; iteration < maxIterations && tasks.Count > 0; iteration++)
         {
+            if (iteration == maxIterations) return isolatedRootIntervals.Count == 0 ? new List<Interval>() : isolatedRootIntervals;
+
             (PolynomialFloat currentPolynomial, MobiusTransformation currentMobius, int variationCount0ToInf) = tasks.Dequeue();
 
             // Handle edge cases

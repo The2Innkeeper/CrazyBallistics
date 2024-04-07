@@ -1,6 +1,3 @@
-## NOTE: This file is outdated, it contains my previous incomplete reasoning which turned out not to be too useful.
-
-
 # Physics solver
 This file contains a high-level description of the algorithm for the physics solver.
 
@@ -14,11 +11,86 @@ An important point to consider is that our position $x(T)$ is a vector while $T$
 
 ## Mathematical description
 
-The derivative of a polynomial function can be computed using the power rule of differentiation. Given a polynomial function
+We have a polynomial function
 
+$$x(T) \coloneqq a_0 + T a_1 + T^2 a_2  + ... + T^n a_n$$
+Using summation notation (easier to convert to code)
+$$\vec x(T) \coloneqq \sum_{k=0}^{n} \left(\frac{1}{k!}\vec{a_k}\right)T^k$$
+
+where $a_i$ are the "coefficient" vectors. 
+1) We wish to expand 
+
+$$
+\begin{aligned}
+\lVert v(T) \rVert^2 &= \frac{x(T)\cdot x(T)}{T^2}
+\\
+&= \frac{1}{T^2}\sum_{i=0}^{n} \left(\frac{1}{i!}\vec{a_i}\right)T^i \sum_{j=0}^{n} \left(\frac{1}{j!}\vec{a_j}\right)T^j 
+\\
+\end{aligned}
+$$
+2) To reduce clutter and also leverage caching let's set $\vec{c_k}\coloneqq \frac{1}{k!}\vec{a_k}$ as in the previous document. Then we expand as a double sum:
+$$
+= \sum_{i=0}^n \sum_{j=0}^n \vec{c_i} \cdot \vec{c_j} T^{i+j}
+$$
+3) Now, let's look at the coefficient of $T^k$ in this expanded sum. It will come from all the terms where $j+i=k\iff i=k-j$. So, the coefficient of $T^k$ is:
+$$
+\text{coeff}(T^k)= \sum_{j=0}^k \vec c_j \cdot \vec c_{k-j}
+$$
+
+Just to visualize this operation, let's consider a table of size $n \times n$, we will see if we can leverage symmetry. Remember that $k$ runs from $0$ to $2n$:
+$$
+\textcolor{red}{k=0}
+\\
+\textcolor{green}{k=1}
+\\
+\textcolor{blue}{k=2}
+\\
+...
+\\
+\textcolor{orange}{k=2n}
+\\
+\def\arraystretch{2.5}
+\begin{array}{c|c|c|c|c|c|c|c}
+\cdot & c_0 & c_1 & c_2 & ... & c_{n-2} & c_{n-1} & c_n 
+\\ \hline
+c_0 & \textcolor{red}{c_0 \cdot c_0} & \textcolor{green}{c_0 \cdot c_1} & \textcolor{blue}{c_0 \cdot c_2} & ... & c_0 \cdot c_{n-2} & c_0 \cdot c_{n-1} & c_0 \cdot c_n
+\\ \hline
+c_1 & \textcolor{green}{c_1 \cdot c_0} & \textcolor{blue}{c_1 \cdot c_1} & c_1 \cdot c_2 & ... & c_1 \cdot c_{n-2} & c_1 \cdot c_{n-1} & c_1 \cdot c_n
+\\ \hline
+c_2 & \textcolor{blue}{c_2 \cdot c_0} & c_2 \cdot c_1 & c_2 \cdot c_2 & ... & c_2 \cdot c_{n-2} & c_2 \cdot c_{n-1} & c_2 \cdot c_n
+\\ \hline
+... & ... & ... & ... & ... & ... & ... & ...
+\\ \hline
+c_{n-2} & c_{n-2} \cdot c_{0} & c_{n-2} \cdot c_{1} & c_{n-2} \cdot c_2 & ... & c_{n-2} \cdot c_{n-2} & c_{n-2} \cdot c_{n-1} & c_{n-2} \cdot c_n
+\\ \hline
+c_{n-1} & c_{n-1} \cdot c_{0} & c_{n-1} \cdot c_{1} & c_{n-1} \cdot c_{2} & ... & c_{n-1} \cdot c_{n-2} & c_{n-1} \cdot c_{n-1} & c_{n-1} \cdot c_n
+\\ \hline
+c_n & c_n \cdot c_0 & c_n \cdot c_1 & c_n \cdot c_2 & ... & c_n \cdot c_{n-2} & c_n \cdot c_{n-1} & \textcolor{orange}{c_n \cdot c_n}
+\end{array}
+$$
+Notice that because dot product is commutative $\vec a \cdot \vec b = \vec b \cdot \vec a$, the matrix is actually symmetrical along its diagonal. 
+There are 2 cases in the pattern: one for even, one for odd. There are always $k+1$ indistinct terms in the sum, but we can group many of the same terms together.
+$$
+k \text{ Even: }\space c_{k/2}\cdot c_{k/2} + 2\sum_{j=0}^{k/2-1}c_j\cdot c_{k-j}
+$$
+$$
+k \text{ Odd: }\space 2\sum_{j=0}^{\frac{k-1}{2}}c_j\cdot c_{k-j}
+$$
+
+But we need to remember that $i,j\leq n$, otherwise we get index out of bound errors. In fact, if you look at the diagram, when we reach $k>n$, then $j$ starts at $k-n$. Mathematically:
+$$
+\begin{cases}
+j=0,1,...,\text{mid} &\text{if } k \leq n
+\\
+j=k-n,k-n+1,...,\text{mid} &\text{if } k \gt n
+\end{cases}
+$$
+where $\text{mid}$ is the stopping point for $j$ depending on the case.
+
+## Expanding the derivative
+Given a polynomial
 $$p(T) \coloneqq a_0 + T a_1 + T^2 a_2  + ... + T^n a_n$$
-
-where $a_i$ are the "coefficient" vectors, the derivative $dp/dT$ is given by:
+The derivative $dp/dT$ is given by:
 
 $$\frac{dp(T)}{dT} = a_1 + 2T a_2 + 3T^2 a_3 + ... + n T^{n-1} a_n$$
 

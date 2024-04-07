@@ -1,4 +1,4 @@
-﻿namespace NonstandardPhysicsSolver.Intervals;
+﻿namespace NonstandardPhysicsSolver.Intervals.Float;
 
 public struct MobiusTransformation
 {

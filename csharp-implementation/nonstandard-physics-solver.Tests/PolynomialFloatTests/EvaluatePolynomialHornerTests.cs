@@ -1,4 +1,4 @@
-﻿namespace NonstandardPhysicsSolver.Polynomials.Tests;
+﻿namespace NonstandardPhysicsSolver.Tests.PolynomialFloatTests;
 
 public class EvaluatePolynomialHornerTests
 {

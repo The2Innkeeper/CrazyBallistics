@@ -10,6 +10,7 @@ public partial struct PolynomialFloat
     /// <exception cref="ArgumentException">Thrown when the coefficients list is null or empty.</exception>
     public float LMQPositiveUpperBound()
     {
+        // First, the polynomial must have a positive leading coefficient.
         int coefficientCount = Coefficients.Length;
         float[] coefficients = new float[coefficientCount];
         if (Coefficients.Last() < 0)
@@ -38,6 +39,7 @@ public partial struct PolynomialFloat
         int[] usageCounts = Enumerable.Repeat(1, coefficientCount).ToArray();
         double upperBound = double.NegativeInfinity;
 
+        // For each i-th negative coefficient in decreasing order of degree:
         for (int neg_i = degree - 1; neg_i >= 0; neg_i--)
         // Note: neg_i = i
         // max {a_i < 0}
@@ -52,12 +54,17 @@ public partial struct PolynomialFloat
             {
                 if (!(coefficients[pos_i] > 0)) { continue; }
 
+                // Pair with j-th preceding (higher degree, j>i) positive coefficients: that is,
+                // calculate 2^t_j * |a_i| / a_j where t_j is the number of usages of a_j up to that point, initialized at 1.
                 double radical = Math.Pow(-Math.Pow(2, usageCounts[pos_i]) * coefficients[neg_i] / coefficients[pos_i], 1.0 / (pos_i - neg_i));
+
+                // Then, take the minimum over all j
                 minRadical = Math.Min(minRadical, radical);
 
                 usageCounts[pos_i]++;
             }
 
+            // Finally, take the maximum of the minimums over i.
             if (minRadical != double.PositiveInfinity)
             {
                 upperBound = Math.Max(upperBound, minRadical);

@@ -6,4 +6,22 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Intervals\Double\**" />
+    <Compile Remove="Polynomials\PolynomialDouble\**" />
+    <EmbeddedResource Remove="Intervals\Double\**" />
+    <EmbeddedResource Remove="Polynomials\PolynomialDouble\**" />
+    <None Remove="Intervals\Double\**" />
+    <None Remove="Polynomials\PolynomialDouble\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Include="xunit" Version="2.7.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.7">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
 </Project>

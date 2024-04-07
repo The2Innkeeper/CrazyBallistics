@@ -1,6 +1,6 @@
 ﻿using NonstandardPhysicsSolver.Intervals;
 
-namespace NonstandardPhysicsSolver.Polynomials.Tests.TestUtils
+namespace NonstandardPhysicsSolver.Tests.TestUtils.TestUtilsDouble
 {
     public static class AssertExtensionsDouble
     {

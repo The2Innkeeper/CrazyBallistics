@@ -1,4 +1,4 @@
-﻿namespace NonstandardPhysicsSolver.Polynomials.Tests.PolynomialDoubleTests;
+﻿namespace NonstandardPhysicsSolver.Tests.PolynomialDoubleTests;
 
 using NonstandardPhysicsSolver.Intervals;
 using Xunit;
