@@ -101,12 +101,14 @@ $$
 \end{aligned}
 $$
 Therefore, the order of composition of simple transformations will be 
-$$\begin{aligned}
+$$
+\begin{aligned}
 &1.\space x\coloneqq x+a \\
 &2.\space x\coloneqq (b-a)x \\
 &3.\space x\coloneqq \frac 1 x \\
 &4.\space x\coloneqq x+1 \\
-\end{aligned}$$
+\end{aligned}
+$$
 
 Then, in order to hard-code the transformation $x\coloneqq \frac 1{x+1}$, let's see what we can do: $$M\left(\frac1{x+1}\right)=\frac{a\frac{1}{x+1}+b}{c\frac{1}{x+1}+d}=\frac{a+b(x+1)}{c+d(x+1)}=\frac{(b)x+(a+b)}{(d)x+(c+d)}$$
 In other words: $a\coloneqq b,b\coloneqq a+b,c\coloneqq d,d\coloneqq c+d$.
@@ -120,29 +122,29 @@ $$
 & \textbf{function: continued fraction} \\
 & \quad \textbf{input:} \, P(x), \text{ a square-free polynomial,} \\
 & \quad \textbf{output:} \, \text{a list of pairs of rational numbers defining isolating intervals} \\
-& \text{ /* Initialization */} \\
-& \quad L := [(P(x), x), (P(–x), –x)] \quad \text{/* two starting intervals */} \\
+& \text{ /\* Initialization \*/} \\
+& \quad L := [(P(x), x), (P(–x), –x)] \quad \text{/\* two starting intervals \*/} \\
 & \quad Isol := [ ] \\
-& \text{ /* Computation */} \\
+& \text{ /\* Computation \*/} \\
 & \quad \textbf{while} \, L \neq [ ] \, \textbf{do} \\
 & \quad \quad \text{Choose} \, (A(x), M(x)) \, \text{in} \, L, \text{ and remove it from} \, L \\
 & \quad \quad v := \text{var}(A) \\
-& \quad \quad \textbf{if} \, v = 0 \, \textbf{then exit} \quad \text{/* no root in the interval */} \\
-& \quad \quad \textbf{if} \, v = 1 \, \textbf{then} \quad \text{/* isolating interval found */} \\
+& \quad \quad \textbf{if} \, v = 0 \, \textbf{then exit} \quad \text{/\* no root in the interval \*/} \\
+& \quad \quad \textbf{if} \, v = 1 \, \textbf{then} \quad \text{/\* isolating interval found \*/} \\
 & \quad \quad \quad \text{add} \, (M(0), M(\infty)) \, \text{to} \, Isol \\
 & \quad \quad \quad \textbf{exit} \\
 & \quad \quad b := \text{some positive integer} \\
 & \quad \quad B(x) = A(x + b) \\
 & \quad \quad w := v – \text{var}(B) \\
-& \quad \quad \textbf{if} \, B(0) = 0 \, \textbf{then} \quad \text{/* rational root found */} \\
+& \quad \quad \textbf{if} \, B(0) = 0 \, \textbf{then} \quad \text{/\* rational root found \*/} \\
 & \quad \quad \quad \text{add} \, (M(b), M(b)) \, \text{to} \, Isol \\
 & \quad \quad \quad B(x) := B(x)/x \\
-& \quad \quad \text{add} \, (B(x),  M(b + x)) \, \text{to} \, L \quad \text{/* roots in (M(b), M(+∞)) */} \\
-& \quad \quad \textbf{if} \, w = 0 \, \textbf{then exit} \quad \text{/* Budan's theorem */} \\
-& \quad \quad \textbf{if} \, w = 1 \, \textbf{then} \quad \text{/* Budan's theorem again */} \\
+& \quad \quad \text{add} \, (B(x),  M(b + x)) \, \text{to} \, L \quad \text{/\* roots in (M(b), M(+∞)) \*/} \\
+& \quad \quad \textbf{if} \, w = 0 \, \textbf{then exit} \quad \text{/\* Budan's theorem \*/} \\
+& \quad \quad \textbf{if} \, w = 1 \, \textbf{then} \quad \text{/\* Budan's theorem again \*/} \\
 & \quad \quad \quad \text{add} \, (M(0), M(b)) \, \text{to} \, Isol \\
 & \quad \quad \textbf{if} \, w > 1 \, \textbf{then} \\
-& \quad \quad \quad \text{add} \, ( A(b/(1 + x)),  M(b/(1 + x)) ) \, \text{to} \, L \quad \text{/* roots in (M(0), M(b)) */}
+& \quad \quad \quad \text{add} \, ( A(b/(1 + x)),  M(b/(1 + x)) ) \, \text{to} \, L \quad \text{/\* roots in (M(0), M(b)) \*/}
 \end{aligned}
 $$
 
