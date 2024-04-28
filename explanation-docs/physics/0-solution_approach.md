@@ -43,13 +43,15 @@ To recap, we have reduced our problem into a minimization of a rational function
 
 Therefore, in order to minimize this function, we will take the derivative and set it to zero to find the critical points (the only other critical point here would be $T=0$, but we are not interested in that case).
 
-NOTE: Okay, after some thought, the velocity function should probably be expanded into Laurent polynomial since the scalar coefficients will not change for each target. Indeed it is necessary for the root-finding algorithms, and it also boosts performance. Expanding requires us to compute a double sum of length $n$, degree of the Taylor polynomial, to find each coefficient, so it is on the order of $n$ vector scalings for vector coefficients $\vec {c_k}:= \frac 1 {k!} \vec{a_k}$ and $\frac {(n+1)(n+2)}{2}$ unique dot products for $\vec {c_i} \cdot \vec{c_j}$ for $i,j,k$ from $0$ to $n$. 
+NOTE: Okay, after some thought, the velocity function should probably be expanded into a Laurent polynomial since the scalar coefficients will not change for each target. This simplifies the derivative calculation so much, so that you don't have to use the quotient rule to expand everything out and waste many calculations. Indeed it is necessary to find the coefficients of the actual polynomial for the root-finding algorithms anyways (this is done by shifted the exponents of the Laurent polynomial), and it also boosts performance. Expanding requires us to compute a double sum of length $n$, degree of the Taylor polynomial, to find each coefficient, so it is on the order of $n$ vector scalings for vector coefficients $\vec {c_k}:= \frac 1 {k!} \vec{a_k}$ and $\frac {(n+1)(n+2)}{2}$ unique dot products for $\vec {c_i} \cdot \vec{c_j}$ for $i,j,k$ from $0$ to $n$. 
 
 The dot products are around is $d\frac {(n+1)(n+2)}{2}$ scalar multiplications for $d$-dimensional vectors. Subsequently, each evaluation of this polynomial is only $2n$ scalar multiplications and additions using Horner's method, which will speed things up tremendously. Not expanding as a double sum and caching the values instead results in having to re-do the same calculations each time, so it is beneficial in that regard.
 
 Also, the expansion into scalar coefficients will allow us to rapidly find the derivative's coefficients without having to expand as a vector dot product, using the standard derivative algorithm for scalar coefficient Laurent polynomials.
 
 Since the vector $x(T)$ is modeled by a polynomial in $T$, then believe it or not, the following dot product is a polynomial in $T$! So we have reduced this problem once again into finding all the positive roots/zeroes of the derivative, then testing them one-by-one into the function $$\lVert v(T) \rVert^2 \coloneqq \frac {x(T)\cdot x(T)}{T^2}$$ in order to find the minimum.
+
+# Deprecated
 
 There exists the second derivative test to make sure that the derivative's root will result in a local minimum, which will reduce the number of candidates to choose from; however, for our purposes, the polynomials should be fairly low degree anyways since if there are very high order derivatives of position, the objects will quickly fly off to infinity. Based on this, I judged that it would not be too useful. For some approaches on finding roots of polynomials, details can be found in the `polynomials` folder.
 
