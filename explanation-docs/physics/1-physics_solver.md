@@ -13,11 +13,11 @@ An important point to consider is that our position $x(T)$ is a vector while $T$
 
 We have a polynomial function
 
-$$x(T) \coloneqq a_0 + T a_1 + T^2 a_2  + ... + T^n a_n$$
+$$x(T) \frac{T^0}{0!} \coloneqq a_0 + \frac{T^1}{1!} a_1 + \frac{T^2}{2!} a_2  + ... + \frac{T^n}{n!} a_n$$
 Using summation notation (easier to convert to code)
 $$\vec x(T) \coloneqq \sum_{k=0}^{n} \left(\frac{1}{k!}\vec{a_k}\right)T^k$$
 
-where $a_i$ are the "coefficient" vectors. 
+where $a_k$ are the "coefficient" vectors. 
 1) We wish to expand 
 
 $$
@@ -87,7 +87,9 @@ j=k-n,k-n+1,...,\text{mid} &\text{if } k \gt n
 $$
 where $\text{mid}$ is the stopping point for $j$ depending on the case.
 
-## Expanding the derivative
+### To-do: update docs using Laurent Polynomials (check C# implementation and Wikipedia for details)
+
+## Deprecated (use Laurent polynomial, it's much faster and much simpler)
 Given a polynomial
 $$p(T) \coloneqq a_0 + T a_1 + T^2 a_2  + ... + T^n a_n$$
 The derivative $dp/dT$ is given by:
