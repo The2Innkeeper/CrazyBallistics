@@ -73,6 +73,13 @@ $$s^{(k)}(T) = \frac{\Delta s_{pt}}{T^k}$$
 $$\lVert s^{(k)}(T)\rVert^2 = \lVert \frac{\Delta s_{pt}}{T^k} \rVert^2$$
 $$=\frac{\Delta s_{pt} \cdot \Delta s_{pt}}{T^{2k}} $$
 
+Now, there is a problem with this approach: it assumes that the target and projectile spawn at the same time. However, we want to be able to spawn them at the same time. Let's investigate what we can do about this:
+
+First, we give the time delay a name, $\Delta T$. This is the amount of time between the target spawn time and the projectile spawn time. If we rewrite the equation above we get
+$$\frac{(s_t(T+\Delta T)-s_p(T))\cdot \left(s_t(T+\Delta T)-s_p(T)\right)}{T^{2k}}$$
+
+Basically we will have to apply a Taylor shift to the $s_t$ array.
+
 Also, because the spatial dimensions are not specified (they are implicit in the dot products), this also works for any number of dimensions, $1D$, $2D$, $3D$, $4D$, $\infty D$!
 
 
